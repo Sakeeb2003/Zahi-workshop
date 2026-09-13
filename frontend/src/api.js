@@ -31,7 +31,7 @@ const initialPurchaseLog = [
   { id: 1, item_name: 'Plywood (18mm)', quantity: 10, unit: 'sheets', price_per_unit: 1200, total_cost: 12000, purchased_date: '2026-09-01', notes: 'Initial buy' }
 ];
 
-// Initialize localStorage defaults
+// Initialize localStorage defaults if not present
 if (!localStorage.getItem('zahi_inventory')) setStorage('zahi_inventory', initialInventory);
 if (!localStorage.getItem('zahi_orders')) setStorage('zahi_orders', initialOrders);
 if (!localStorage.getItem('zahi_invoices')) setStorage('zahi_invoices', initialInvoices);
@@ -57,11 +57,19 @@ const syncToCloud = (overrideData = {}) => {
   });
 };
 
-// Pull fresh state from Cloud DB in background
+// Pull fresh state from Cloud DB
 let isPulling = false;
-const pullFromCloud = async () => {
+let lastPullTime = 0;
+
+const pullFromCloud = async (force = false) => {
+  const now = Date.now();
+  // Rate limit pull requests to once every 10 seconds unless forced
+  if (!force && now - lastPullTime < 10000) return;
   if (isPulling) return;
+  
   isPulling = true;
+  lastPullTime = now;
+
   try {
     const res = await axios.get(CLOUD_DB_URL, { timeout: 3500 });
     if (res.data && res.data.data) {
@@ -83,15 +91,20 @@ const pullFromCloud = async () => {
   }
 };
 
-// Pull cloud data immediately on startup and poll every 4 seconds
-pullFromCloud();
+// Pull cloud data on startup & register smart triggers (tab focus, visibility change)
+pullFromCloud(true);
+
 if (typeof window !== 'undefined') {
-  setInterval(pullFromCloud, 4000);
+  window.addEventListener('focus', () => pullFromCloud(true));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) pullFromCloud(true);
+  });
+  setInterval(() => pullFromCloud(false), 30000);
 }
 
 export const inventoryAPI = {
   getAll: async () => {
-    pullFromCloud(); // background pull
+    pullFromCloud(false);
     return { data: getStorage('zahi_inventory', initialInventory) };
   },
   getSummary: async (fromDate, toDate) => {
@@ -116,6 +129,7 @@ export const inventoryAPI = {
     const newList = [data, ...inv];
     setStorage('zahi_inventory', newList);
     syncToCloud({ inventory: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   update: async (data) => {
@@ -123,6 +137,7 @@ export const inventoryAPI = {
     inv = inv.map(i => i.id === data.id ? { ...i, ...data } : i);
     setStorage('zahi_inventory', inv);
     syncToCloud({ inventory: inv });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   delete: async (id) => {
@@ -130,13 +145,14 @@ export const inventoryAPI = {
     const newList = inv.filter(i => i.id !== id);
     setStorage('zahi_inventory', newList);
     syncToCloud({ inventory: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
 };
 
 export const ordersAPI = {
   getAll: async () => {
-    pullFromCloud();
+    pullFromCloud(false);
     return { data: getStorage('zahi_orders', initialOrders) };
   },
   getSummary: async (fromDate, toDate) => {
@@ -163,6 +179,7 @@ export const ordersAPI = {
     const newList = [data, ...orders];
     setStorage('zahi_orders', newList);
     syncToCloud({ orders: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   update: async (data) => {
@@ -170,6 +187,7 @@ export const ordersAPI = {
     orders = orders.map(i => i.id === data.id ? { ...i, ...data } : i);
     setStorage('zahi_orders', orders);
     syncToCloud({ orders: orders });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   delete: async (id) => {
@@ -177,13 +195,14 @@ export const ordersAPI = {
     const newList = orders.filter(i => i.id !== id);
     setStorage('zahi_orders', newList);
     syncToCloud({ orders: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
 };
 
 export const invoicesAPI = {
   getAll: async () => {
-    pullFromCloud();
+    pullFromCloud(false);
     return { data: getStorage('zahi_invoices', initialInvoices) };
   },
   add: async (data) => {
@@ -201,6 +220,7 @@ export const invoicesAPI = {
     const newList = [data, ...invoices];
     setStorage('zahi_invoices', newList);
     syncToCloud({ invoices: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   update: async (data) => {
@@ -208,6 +228,7 @@ export const invoicesAPI = {
     invoices = invoices.map(i => i.id === data.id ? { ...i, ...data } : i);
     setStorage('zahi_invoices', invoices);
     syncToCloud({ invoices: invoices });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   delete: async (id) => {
@@ -215,13 +236,14 @@ export const invoicesAPI = {
     const newList = invoices.filter(i => i.id !== id);
     setStorage('zahi_invoices', newList);
     syncToCloud({ invoices: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
 };
 
 export const purchaseLogAPI = {
   getAll: async () => {
-    pullFromCloud();
+    pullFromCloud(false);
     return { data: getStorage('zahi_purchase_log', initialPurchaseLog) };
   },
   add: async (data) => {
@@ -236,6 +258,7 @@ export const purchaseLogAPI = {
     const newList = [newItem, ...logs];
     setStorage('zahi_purchase_log', newList);
     syncToCloud({ purchase_log: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   },
   delete: async (id) => {
@@ -243,6 +266,7 @@ export const purchaseLogAPI = {
     const newList = logs.filter(i => i.id !== id);
     setStorage('zahi_purchase_log', newList);
     syncToCloud({ purchase_log: newList });
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('zahi_data_updated'));
     return { data: { message: 'Success' } };
   }
 };
