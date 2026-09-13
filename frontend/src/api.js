@@ -6,6 +6,13 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+api.interceptors.response.use((response) => {
+  if (typeof response.data === 'string' && response.data.trim().startsWith('<')) {
+    throw new Error('HTML response returned instead of JSON');
+  }
+  return response;
+});
+
 // Helper to simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

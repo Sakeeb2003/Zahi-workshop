@@ -15,9 +15,10 @@ export default function Orders() {
   const fetchOrders = async () => {
     try {
       const response = await ordersAPI.getAll();
-      setItems(response.data);
+      setItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching orders:", error);
+      setItems([]);
     } finally {
       setLoading(false);
     }

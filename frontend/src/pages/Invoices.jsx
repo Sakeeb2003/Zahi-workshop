@@ -20,12 +20,16 @@ export default function Invoices() {
     try {
       const [invRes, ordRes] = await Promise.all([
         invoicesAPI.getAll(),
-        ordersAPI.getAll() // We need orders to link invoices to them
+        ordersAPI.getAll()
       ]);
-      setItems(invRes.data);
-      setOrders(ordRes.data.filter(o => o.status === 'finished')); // Usually invoice finished orders
+      const safeInv = Array.isArray(invRes.data) ? invRes.data : [];
+      const safeOrd = Array.isArray(ordRes.data) ? ordRes.data : [];
+      setItems(safeInv);
+      setOrders(safeOrd);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setItems([]);
+      setOrders([]);
     } finally {
       setLoading(false);
     }

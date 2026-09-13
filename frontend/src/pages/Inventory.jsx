@@ -80,9 +80,10 @@ export default function Inventory() {
   const fetchInventory = async () => {
     try {
       const response = await inventoryAPI.getAll();
-      setItems(response.data);
+      setItems(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching inventory:", error);
+      setItems([]);
     } finally {
       setLoading(false);
     }

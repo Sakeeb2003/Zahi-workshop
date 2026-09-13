@@ -28,20 +28,23 @@ export default function ItemSummary() {
     setLoading(true);
     try {
       const res = await api.get('/purchase_log.php');
-      setAllItems(res.data);
+      setAllItems(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error(err);
+      const stored = localStorage.getItem('zahi_purchase_log');
+      setAllItems(stored ? JSON.parse(stored) : []);
     } finally {
       setLoading(false);
     }
   };
 
   // Filtered items based on date range + item name (live filter)
-  const filteredItems = allItems.filter(item => {
+  const safeAllItems = Array.isArray(allItems) ? allItems : [];
+  const filteredItems = safeAllItems.filter(item => {
     const d = item.purchased_date;
     if (fromDate && d < fromDate) return false;
     if (toDate   && d > toDate)   return false;
-    if (searchName && !item.item_name.toLowerCase().includes(searchName.toLowerCase())) return false;
+    if (searchName && item.item_name && !item.item_name.toLowerCase().includes(searchName.toLowerCase())) return false;
     return true;
   });
 
