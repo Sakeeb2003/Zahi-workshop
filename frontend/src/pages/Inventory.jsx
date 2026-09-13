@@ -302,10 +302,13 @@ export default function Inventory() {
                   <select className="input-field" value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})}>
                     <option value="pcs">Pcs</option>
                     <option value="sheets">Sheets</option>
+                    <option value="feet">Feet</option>
                     <option value="cft">Cubic Feet</option>
+                    <option value="liters">Liters</option>
                     <option value="kg">Kg</option>
                     <option value="bottles">Bottles</option>
                     <option value="meters">Meters</option>
+                    <option value="box">Box</option>
                   </select>
                 </div>
               </div>
