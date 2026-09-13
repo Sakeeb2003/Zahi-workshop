@@ -22,11 +22,15 @@ switch ($method) {
     case 'POST':
         $data = json_decode(file_get_contents("php://input"));
         if(!empty($data->order_id) && isset($data->amount) && !empty($data->invoice_date)) {
-            $query = "INSERT INTO invoices SET order_id=:order_id, invoice_date=:invoice_date, amount=:amount, status=:status";
+            $query = "INSERT INTO invoices SET order_id=:order_id, invoice_date=:invoice_date, amount=:amount, payment_type=:payment_type, advance_amount=:advance_amount, status=:status";
             $stmt = $db->prepare($query);
             $stmt->bindParam(":order_id", $data->order_id);
             $stmt->bindParam(":invoice_date", $data->invoice_date);
             $stmt->bindParam(":amount", $data->amount);
+            $payment_type = $data->payment_type ?? 'full';
+            $advance_amount = $data->advance_amount ?? 0;
+            $stmt->bindParam(":payment_type", $payment_type);
+            $stmt->bindParam(":advance_amount", $advance_amount);
             $status = $data->status ?? 'unpaid';
             $stmt->bindParam(":status", $status);
             if($stmt->execute()) {
