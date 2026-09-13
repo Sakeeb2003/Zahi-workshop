@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../api';
+import { purchaseLogAPI } from '../api';
 import { Search, Package, TrendingUp, ShoppingBag, Calendar, FileDown, Plus, Trash2, ClipboardList, Filter } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -27,16 +27,10 @@ export default function ItemSummary() {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/purchase_log.php');
-      if (Array.isArray(res.data)) {
-        setAllItems(res.data);
-      } else {
-        const stored = localStorage.getItem('zahi_purchase_log');
-        setAllItems(stored ? JSON.parse(stored) : []);
-      }
+      const res = await purchaseLogAPI.getAll();
+      setAllItems(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      const stored = localStorage.getItem('zahi_purchase_log');
-      setAllItems(stored ? JSON.parse(stored) : []);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -60,28 +54,10 @@ export default function ItemSummary() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const qty = parseFloat(formData.quantity || 0);
-    const price = parseFloat(formData.price_per_unit || 0);
-    const newItem = {
-      id: Date.now(),
-      item_name: formData.item_name,
-      quantity: qty,
-      unit: formData.unit || 'pcs',
-      price_per_unit: price,
-      total_cost: qty * price,
-      purchased_date: formData.purchased_date || today,
-      notes: formData.notes || ''
-    };
-
     try {
-      await api.post('/purchase_log.php', formData);
+      await purchaseLogAPI.add(formData);
     } catch (err) {
-      console.warn("Saving locally (API offline/Netlify):", err);
-      const stored = localStorage.getItem('zahi_purchase_log');
-      const list = stored ? JSON.parse(stored) : [];
-      const updatedList = [newItem, ...list];
-      localStorage.setItem('zahi_purchase_log', JSON.stringify(updatedList));
-      setAllItems(updatedList);
+      console.error(err);
     } finally {
       setIsModalOpen(false);
       setFormData({ item_name: '', quantity: '', unit: 'pcs', price_per_unit: '', purchased_date: today, notes: '' });
@@ -92,13 +68,9 @@ export default function ItemSummary() {
 
   const handleDelete = async (id) => {
     try {
-      await api.delete('/purchase_log.php', { data: { id } });
+      await purchaseLogAPI.delete(id);
     } catch (err) {
-      const stored = localStorage.getItem('zahi_purchase_log');
-      const list = stored ? JSON.parse(stored) : safeAllItems;
-      const updatedList = list.filter(i => i.id !== id);
-      localStorage.setItem('zahi_purchase_log', JSON.stringify(updatedList));
-      setAllItems(updatedList);
+      console.error(err);
     } finally {
       await fetchAll();
     }
