@@ -75,7 +75,11 @@ export default function Inventory() {
     price: '', status: 'in_stock', purchased_date: new Date().toISOString().split('T')[0]
   });
 
-  useEffect(() => { fetchInventory(); }, []);
+  useEffect(() => { 
+    fetchInventory(); 
+    window.addEventListener('zahi_data_updated', fetchInventory);
+    return () => window.removeEventListener('zahi_data_updated', fetchInventory);
+  }, []);
 
   const fetchInventory = async () => {
     try {

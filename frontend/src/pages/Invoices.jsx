@@ -22,6 +22,8 @@ export default function Invoices() {
 
   useEffect(() => {
     fetchData();
+    window.addEventListener('zahi_data_updated', fetchData);
+    return () => window.removeEventListener('zahi_data_updated', fetchData);
   }, []);
 
   const fetchData = async () => {

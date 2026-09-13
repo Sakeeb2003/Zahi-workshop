@@ -10,6 +10,8 @@ export default function Orders() {
 
   useEffect(() => {
     fetchOrders();
+    window.addEventListener('zahi_data_updated', fetchOrders);
+    return () => window.removeEventListener('zahi_data_updated', fetchOrders);
   }, []);
 
   const fetchOrders = async () => {

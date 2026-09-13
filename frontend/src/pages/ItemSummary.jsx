@@ -22,6 +22,8 @@ export default function ItemSummary() {
   // Load ALL records on page open
   useEffect(() => {
     fetchAll();
+    window.addEventListener('zahi_data_updated', fetchAll);
+    return () => window.removeEventListener('zahi_data_updated', fetchAll);
   }, []);
 
   const fetchAll = async () => {

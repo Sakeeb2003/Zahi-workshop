@@ -37,56 +37,64 @@ if (!localStorage.getItem('zahi_orders')) setStorage('zahi_orders', initialOrder
 if (!localStorage.getItem('zahi_invoices')) setStorage('zahi_invoices', initialInvoices);
 if (!localStorage.getItem('zahi_purchase_log')) setStorage('zahi_purchase_log', initialPurchaseLog);
 
-// Helper to push state to Cloud DB
-const syncToCloud = async (overrideData = {}) => {
+// Push state to Cloud DB asynchronously (Non-blocking)
+const syncToCloud = (overrideData = {}) => {
   const currentInv = overrideData.inventory || getStorage('zahi_inventory', initialInventory);
   const currentOrd = overrideData.orders || getStorage('zahi_orders', initialOrders);
   const currentInvcs = overrideData.invoices || getStorage('zahi_invoices', initialInvoices);
   const currentPurLog = overrideData.purchase_log || getStorage('zahi_purchase_log', initialPurchaseLog);
 
-  try {
-    await axios.put(CLOUD_DB_URL, {
-      name: 'zahi_db',
-      data: {
-        inventory: currentInv,
-        orders: currentOrd,
-        invoices: currentInvcs,
-        purchase_log: currentPurLog
-      }
-    }, { headers: { 'Content-Type': 'application/json' }, timeout: 5000 });
-  } catch (err) {
+  axios.put(CLOUD_DB_URL, {
+    name: 'zahi_db',
+    data: {
+      inventory: currentInv,
+      orders: currentOrd,
+      invoices: currentInvcs,
+      purchase_log: currentPurLog
+    }
+  }, { headers: { 'Content-Type': 'application/json' }, timeout: 5000 }).catch(err => {
     console.warn("Cloud sync warning:", err);
-  }
+  });
 };
 
-// Helper to pull fresh state from Cloud DB
+// Pull fresh state from Cloud DB in background
+let isPulling = false;
 const pullFromCloud = async () => {
+  if (isPulling) return;
+  isPulling = true;
   try {
-    const res = await axios.get(CLOUD_DB_URL, { timeout: 4000 });
+    const res = await axios.get(CLOUD_DB_URL, { timeout: 3500 });
     if (res.data && res.data.data) {
       const d = res.data.data;
-      if (Array.isArray(d.inventory)) setStorage('zahi_inventory', d.inventory);
-      if (Array.isArray(d.orders)) setStorage('zahi_orders', d.orders);
-      if (Array.isArray(d.invoices)) setStorage('zahi_invoices', d.invoices);
-      if (Array.isArray(d.purchase_log)) setStorage('zahi_purchase_log', d.purchase_log);
-      return d;
+      let changed = false;
+      if (Array.isArray(d.inventory)) { setStorage('zahi_inventory', d.inventory); changed = true; }
+      if (Array.isArray(d.orders)) { setStorage('zahi_orders', d.orders); changed = true; }
+      if (Array.isArray(d.invoices)) { setStorage('zahi_invoices', d.invoices); changed = true; }
+      if (Array.isArray(d.purchase_log)) { setStorage('zahi_purchase_log', d.purchase_log); changed = true; }
+      
+      if (changed && typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('zahi_data_updated'));
+      }
     }
   } catch (err) {
     console.warn("Cloud fetch warning:", err);
+  } finally {
+    isPulling = false;
   }
-  return null;
 };
 
-// Pull cloud data on initial load
+// Pull cloud data immediately on startup and poll every 4 seconds
 pullFromCloud();
+if (typeof window !== 'undefined') {
+  setInterval(pullFromCloud, 4000);
+}
 
 export const inventoryAPI = {
   getAll: async () => {
-    await pullFromCloud();
+    pullFromCloud(); // background pull
     return { data: getStorage('zahi_inventory', initialInventory) };
   },
   getSummary: async (fromDate, toDate) => {
-    await pullFromCloud();
     const inv = getStorage('zahi_inventory', initialInventory);
     const filteredInv = inv.filter(i => {
       if (!i.purchased_date) return false;
@@ -128,11 +136,10 @@ export const inventoryAPI = {
 
 export const ordersAPI = {
   getAll: async () => {
-    await pullFromCloud();
+    pullFromCloud();
     return { data: getStorage('zahi_orders', initialOrders) };
   },
   getSummary: async (fromDate, toDate) => {
-    await pullFromCloud();
     const orders = getStorage('zahi_orders', initialOrders);
     const inv = getStorage('zahi_inventory', initialInventory);
     const filteredOrders = orders.filter(o => {
@@ -176,7 +183,7 @@ export const ordersAPI = {
 
 export const invoicesAPI = {
   getAll: async () => {
-    await pullFromCloud();
+    pullFromCloud();
     return { data: getStorage('zahi_invoices', initialInvoices) };
   },
   add: async (data) => {
@@ -184,7 +191,13 @@ export const invoicesAPI = {
     data.id = invoices.length ? Math.max(...invoices.map(i => i.id)) + 1 : 1;
     const orders = getStorage('zahi_orders', initialOrders);
     const order = orders.find(o => o.id == data.order_id);
-    if (order) { data.customer_name = order.customer_name; data.description = order.description; }
+    if (order) { 
+      data.customer_name = order.customer_name; 
+      data.description = order.description; 
+    } else {
+      data.customer_name = data.customer_name || 'Customer';
+      data.description = data.description || 'Woodworking Services';
+    }
     const newList = [data, ...invoices];
     setStorage('zahi_invoices', newList);
     syncToCloud({ invoices: newList });
@@ -208,7 +221,7 @@ export const invoicesAPI = {
 
 export const purchaseLogAPI = {
   getAll: async () => {
-    await pullFromCloud();
+    pullFromCloud();
     return { data: getStorage('zahi_purchase_log', initialPurchaseLog) };
   },
   add: async (data) => {

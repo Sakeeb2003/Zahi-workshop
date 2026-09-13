@@ -17,7 +17,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchSummary();
-  }, []); // Initial load
+    window.addEventListener('zahi_data_updated', fetchSummary);
+    return () => window.removeEventListener('zahi_data_updated', fetchSummary);
+  }, []);
 
   const fetchSummary = async () => {
     setLoading(true);
