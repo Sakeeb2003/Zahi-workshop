@@ -1,0 +1,17 @@
+{
+  "short_name": "Zahi Work",
+  "name": "Zahi Wood Work Management System",
+  "description": "Woodworking & Carpenter Business Management System",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
+}
