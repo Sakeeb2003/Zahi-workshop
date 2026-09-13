@@ -76,16 +76,23 @@ function App() {
         
         <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Mobile Header */}
-          <header className="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm z-30">
-            <div className="flex items-center">
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 mr-2 text-slate-600 hover:bg-slate-100 rounded-md">
+          <header className="lg:hidden bg-slate-900 text-white border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-md z-30 sticky top-0">
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={() => setIsSidebarOpen(true)} 
+                className="p-2 -ml-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg active:bg-slate-700 transition-colors"
+                aria-label="Open Navigation Menu"
+              >
                 <Menu className="w-6 h-6" />
               </button>
-              <h1 className="font-bold text-slate-900 text-lg">Zahi Wood Work</h1>
+              <div>
+                <h1 className="font-bold text-white text-base tracking-tight leading-none">Zahi Wood Work</h1>
+                <p className="text-slate-400 text-[11px] mt-0.5">Management System</p>
+              </div>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/inventory" element={<Inventory />} />
