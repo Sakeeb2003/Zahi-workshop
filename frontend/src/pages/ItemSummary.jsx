@@ -28,9 +28,13 @@ export default function ItemSummary() {
     setLoading(true);
     try {
       const res = await api.get('/purchase_log.php');
-      setAllItems(Array.isArray(res.data) ? res.data : []);
+      if (Array.isArray(res.data)) {
+        setAllItems(res.data);
+      } else {
+        const stored = localStorage.getItem('zahi_purchase_log');
+        setAllItems(stored ? JSON.parse(stored) : []);
+      }
     } catch (err) {
-      console.error(err);
       const stored = localStorage.getItem('zahi_purchase_log');
       setAllItems(stored ? JSON.parse(stored) : []);
     } finally {
@@ -56,25 +60,48 @@ export default function ItemSummary() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const qty = parseFloat(formData.quantity || 0);
+    const price = parseFloat(formData.price_per_unit || 0);
+    const newItem = {
+      id: Date.now(),
+      item_name: formData.item_name,
+      quantity: qty,
+      unit: formData.unit || 'pcs',
+      price_per_unit: price,
+      total_cost: qty * price,
+      purchased_date: formData.purchased_date || today,
+      notes: formData.notes || ''
+    };
+
     try {
       await api.post('/purchase_log.php', formData);
+    } catch (err) {
+      console.warn("Saving locally (API offline/Netlify):", err);
+      const stored = localStorage.getItem('zahi_purchase_log');
+      const list = stored ? JSON.parse(stored) : [];
+      const updatedList = [newItem, ...list];
+      localStorage.setItem('zahi_purchase_log', JSON.stringify(updatedList));
+      setAllItems(updatedList);
+    } finally {
       setIsModalOpen(false);
       setFormData({ item_name: '', quantity: '', unit: 'pcs', price_per_unit: '', purchased_date: today, notes: '' });
-      await fetchAll();
-    } catch (err) {
-      console.error(err);
-      alert('Error saving! Please try again.');
-    } finally {
       setSaving(false);
+      await fetchAll();
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this purchase record?')) return;
     try {
       await api.delete('/purchase_log.php', { data: { id } });
+    } catch (err) {
+      const stored = localStorage.getItem('zahi_purchase_log');
+      const list = stored ? JSON.parse(stored) : safeAllItems;
+      const updatedList = list.filter(i => i.id !== id);
+      localStorage.setItem('zahi_purchase_log', JSON.stringify(updatedList));
+      setAllItems(updatedList);
+    } finally {
       await fetchAll();
-    } catch (err) { console.error(err); }
+    }
   };
 
   const downloadPDF = () => {
