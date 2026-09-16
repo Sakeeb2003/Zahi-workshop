@@ -234,25 +234,15 @@ export default function Invoices() {
 
     // 2. Centered Logo & Brand Header
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 91, 14, 28, 21);
+      doc.addImage(LOGO_BASE64, 'PNG', 82, 6, 46, 42);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(...textDark);
-    doc.text("Z A H I   A B D U L L A H", 105, 41, { align: 'center' });
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(...textGray);
-    doc.text("H O M E   D E S I G N I N G", 105, 46, { align: 'center' });
-
     // 3. Top Thin Horizontal Line Divider
     doc.setDrawColor(...lineBorder);
     doc.setLineWidth(0.4);
-    doc.line(14, 51, 196, 51);
+    doc.line(14, 50, 196, 50);
 
     // 4. Meta Information (Issued To & Invoice No)
     doc.setFont("helvetica", "bold");
