@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
@@ -6,6 +6,7 @@ import Inventory from './pages/Inventory';
 import Orders from './pages/Orders';
 import Invoices from './pages/Invoices';
 import ItemSummary from './pages/ItemSummary';
+import { setupRealtimeSync } from './api';
 
 function Sidebar({ isOpen, setIsOpen }) {
   const location = useLocation();
@@ -68,6 +69,10 @@ function Sidebar({ isOpen, setIsOpen }) {
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setupRealtimeSync();
+  }, []);
 
   return (
     <Router>
