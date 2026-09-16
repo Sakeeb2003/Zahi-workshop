@@ -33,8 +33,8 @@ function Sidebar({ isOpen, setIsOpen }) {
       <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 text-white min-h-screen flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-6 flex justify-between items-center border-b border-slate-800">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-slate-950 border border-amber-500/60 flex items-center justify-center overflow-hidden p-1 shadow-lg">
-              <img src="/logo.png" alt="ZA Logo" className="w-full h-full object-contain rounded-md" />
+            <div className="w-12 h-12 rounded-full bg-[#F6F4F0] border-2 border-amber-500/70 flex items-center justify-center overflow-hidden p-0.5 shadow-md">
+              <img src="/logo.png" alt="ZA Logo" className="w-full h-full object-contain rounded-full" />
             </div>
             <div>
               <h1 className="text-base font-bold text-white tracking-tight leading-tight">
