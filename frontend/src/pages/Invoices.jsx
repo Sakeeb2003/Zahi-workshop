@@ -434,10 +434,9 @@ export default function Invoices() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...textGray);
-    doc.text("Bank Name: Commercial Bank / Bank of Ceylon", 14, footerY + 5);
+    doc.text("Bank: Sampath Bank", 14, footerY + 5);
     doc.text("Account Name: Zahi Abdullah", 14, footerY + 10);
-    doc.text("Account No.: 123-456-7890", 14, footerY + 15);
-    doc.text("Pay by: As Agreed", 14, footerY + 20);
+    doc.text("Account No.: 1126-5272-3744", 14, footerY + 15);
 
     // Cursive Thank You Signature Image on Bottom Right
     try {
