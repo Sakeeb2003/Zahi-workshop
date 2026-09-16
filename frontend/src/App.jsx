@@ -31,10 +31,17 @@ function Sidebar({ isOpen, setIsOpen }) {
       
       {/* Sidebar */}
       <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 text-white min-h-screen flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-        <div className="p-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Zahi Wood Work</h1>
-            <p className="text-slate-400 text-sm mt-1">Management System</p>
+        <div className="p-6 flex justify-between items-center border-b border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-600/40 flex items-center justify-center overflow-hidden p-1 shadow-inner">
+              <img src="/logo.png" alt="MR Logo" className="w-full h-full object-contain rounded" onError={(e) => { e.target.style.display='none'; }} />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
+                <span className="text-amber-500 font-extrabold tracking-wider">MR</span> Wood Work
+              </h1>
+              <p className="text-slate-400 text-xs mt-0.5">Carpenter System</p>
+            </div>
           </div>
           <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
             <X className="w-6 h-6" />
@@ -90,9 +97,16 @@ function App() {
               >
                 <Menu className="w-6 h-6" />
               </button>
-              <div>
-                <h1 className="font-bold text-white text-base tracking-tight leading-none">Zahi Wood Work</h1>
-                <p className="text-slate-400 text-[11px] mt-0.5">Management System</p>
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-950/60 border border-amber-600/40 flex items-center justify-center p-0.5 overflow-hidden">
+                  <img src="/logo.png" alt="MR Logo" className="w-full h-full object-contain rounded" onError={(e) => { e.target.style.display='none'; }} />
+                </div>
+                <div>
+                  <h1 className="font-bold text-white text-base tracking-tight leading-none flex items-center gap-1">
+                    <span className="text-amber-500 font-extrabold">MR</span> Wood Work
+                  </h1>
+                  <p className="text-slate-400 text-[11px] mt-0.5">Carpenter System</p>
+                </div>
               </div>
             </div>
           </header>

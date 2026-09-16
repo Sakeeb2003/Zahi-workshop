@@ -235,7 +235,7 @@ export default function Invoices() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(235, 215, 195);
-    doc.text("Zahi Wood Work Carpenter Solutions", 105, 15, { align: 'center' });
+    doc.text("MR Wood Work • Carpenter Solutions", 105, 15, { align: 'center' });
 
     // 2. Main Page Background Fill
     doc.setFillColor(...bgCream);
@@ -248,12 +248,13 @@ export default function Invoices() {
     doc.text("Invoice", 14, 38);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("ZAHI WOOD WORK", 196, 35, { align: 'right' });
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(14);
+    doc.setTextColor(...textBrown);
+    doc.text("MR WOOD WORK", 196, 34, { align: 'right' });
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(140, 105, 75);
-    doc.text("WOOD SOLUTIONS & CUSTOM CARPENTRY", 196, 40, { align: 'right' });
+    doc.setTextColor(180, 120, 50);
+    doc.text("CARPENTER & CUSTOM WOOD SOLUTIONS", 196, 39, { align: 'right' });
 
     // 4. "Bill to" Section with Underline
     doc.setFont("helvetica", "bold");
