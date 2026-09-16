@@ -232,9 +232,23 @@ export default function Invoices() {
     doc.setFillColor(...bgColor);
     doc.rect(0, 0, 210, 297, 'F');
 
-    // 2. Centered Logo & Brand Header
+    // 2. Centered Logo & Brand Header in Circle Frame
+    const cx = 105;
+    const cy = 25;
+    const r = 19;
+
+    // Off-white circle fill background
+    doc.setFillColor(246, 244, 240);
+    doc.circle(cx, cy, r, 'F');
+
+    // Outer subtle border ring
+    doc.setDrawColor(200, 192, 182);
+    doc.setLineWidth(0.5);
+    doc.circle(cx, cy, r, 'S');
+
+    // Render PNG Logo inside circle
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 82, 6, 46, 42);
+      doc.addImage(LOGO_BASE64, 'PNG', cx - 18, cy - 18, 36, 36);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
