@@ -250,7 +250,7 @@ export default function Invoices() {
 
     // Draw ZA Logo on PDF Header
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 138, 24, 18, 15);
+      doc.addImage(LOGO_BASE64, 'PNG', 126, 23, 24, 18);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
