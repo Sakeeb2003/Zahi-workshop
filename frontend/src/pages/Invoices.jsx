@@ -4,6 +4,7 @@ import { Plus, Printer, Trash2, CheckCircle, FileText, Download, Search, CreditC
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { LOGO_BASE64 } from '../assets/logoBase64';
+import { THANK_YOU_BASE64 } from '../assets/thankYouBase64';
 
 // Helper to extract array of payment entries from an invoice
 export const getInvoicePayments = (invoice) => {
@@ -219,147 +220,163 @@ export default function Invoices() {
   };
 
   // Printable PDF Invoice Generator with Payment History Table
+  // Printable PDF Invoice Generator - Minimalist Design matching user template
   const handlePrint = (invoice) => {
     const doc = new jsPDF();
-    const primaryBrown = [115, 67, 32];   // Dark warm wood brown #734320
-    const textBrown    = [92, 58, 33];    // Rich wood text #5C3A21
-    const bgCream      = [248, 243, 236]; // Off-white warm paper #F8F3EC
-    const lightLine    = [215, 200, 185]; // Warm beige grid lines
+    const bgColor   = [246, 244, 240]; // Soft off-white light beige paper #F6F4F0
+    const textDark  = [25, 25, 25];    // Dark charcoal / black #191919
+    const textGray  = [110, 110, 110]; // Elegant gray #6E6E6E
+    const lineBorder = [190, 185, 178]; // Subtle beige separator lines
 
-    // 1. Top Header Banner Bar
-    doc.setFillColor(...primaryBrown);
-    doc.rect(0, 0, 210, 20, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(255, 255, 255);
-    doc.text("INVOICE", 105, 8.5, { align: 'center' });
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.setTextColor(235, 215, 195);
-    doc.text("Zahi Abdullah Home Designing • Custom Interior & Woodwork", 105, 14.5, { align: 'center' });
+    // 1. Page Background Fill
+    doc.setFillColor(...bgColor);
+    doc.rect(0, 0, 210, 297, 'F');
 
-    // 2. Main Page Background Fill
-    doc.setFillColor(...bgCream);
-    doc.rect(0, 20, 210, 277, 'F');
-
-    // 3. Header Section (Invoice Title & Logo)
-    doc.setFont("serif", "bold");
-    doc.setFontSize(28);
-    doc.setTextColor(...textBrown);
-    doc.text("Invoice", 14, 38);
-
-    // Draw ZA Logo on PDF Header
+    // 2. Centered Logo & Brand Header
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 126, 23, 24, 18);
+      doc.addImage(LOGO_BASE64, 'PNG', 91, 14, 28, 21);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.setTextColor(...textBrown);
-    doc.text("ZAHI ABDULLAH", 196, 31, { align: 'right' });
-    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...textDark);
+    doc.text("Z A H I   A B D U L L A H", 105, 41, { align: 'center' });
+
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
-    doc.setTextColor(180, 120, 50);
-    doc.text("HOME DESIGNING", 196, 36, { align: 'right' });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(110, 90, 70);
-    doc.text("Quality Interior & Custom Furniture", 196, 40, { align: 'right' });
+    doc.setTextColor(...textGray);
+    doc.text("H O M E   D E S I G N I N G", 105, 46, { align: 'center' });
 
-    // 4. "Bill to" Section with Underline
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(...textBrown);
-    doc.text("Bill to", 14, 52);
-    doc.setDrawColor(...primaryBrown);
-    doc.setLineWidth(0.6);
-    doc.line(14, 54, 38, 54);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(130, 95, 65);
-    doc.text("Client Name", 14, 62);
-    doc.text("Invoice No", 65, 62);
-    doc.text("Order Ref", 115, 62);
-    doc.text("Date", 160, 62);
-
-    doc.setFontSize(9.5);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(40, 30, 20);
-    const invNumStr = `INV-${invoice.id.toString().padStart(4, '0')}`;
-    const orderRefStr = invoice.order_id ? `Order #${invoice.order_id}` : 'Direct Order';
-    const dateStr = invoice.invoice_date ? new Date(invoice.invoice_date.toString().replace(/-/g, '/')).toLocaleDateString('en-GB') : '-';
-    
-    doc.text(invoice.customer_name || 'Valued Customer', 14, 67);
-    doc.text(invNumStr, 65, 67);
-    doc.text(orderRefStr, 115, 67);
-    doc.text(dateStr, 160, 67);
-
-    doc.setDrawColor(...lightLine);
+    // 3. Top Thin Horizontal Line Divider
+    doc.setDrawColor(...lineBorder);
     doc.setLineWidth(0.4);
-    doc.line(14, 71, 196, 71);
+    doc.line(14, 51, 196, 51);
 
-    // 5. Wood Grain Ring Watermark (Concentric Circles)
-    doc.setDrawColor(230, 218, 204);
-    doc.setLineWidth(0.3);
-    for (let r = 10; r <= 55; r += 5) {
-      doc.circle(105, 145, r);
+    // 4. Meta Information (Issued To & Invoice No)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textDark);
+    doc.text("ISSUED TO:", 14, 60);
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.text(invoice.customer_name || 'Valued Customer', 14, 66);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(...textGray);
+    if (invoice.description) {
+      doc.text(invoice.description.substring(0, 45), 14, 71);
     }
 
-    // 6. Itemized Table
+    const invNumStr = `#${invoice.id.toString().padStart(6, '0')}`;
+    const orderRefStr = invoice.order_id ? `Order #${invoice.order_id}` : 'Direct Order';
+    const dateStr = invoice.invoice_date ? new Date(invoice.invoice_date.toString().replace(/-/g, '/')).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textDark);
+    doc.text("INVOICE NO:", 196, 60, { align: 'right' });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.text(invNumStr, 196, 66, { align: 'right' });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textGray);
+    doc.text(dateStr, 196, 71, { align: 'right' });
+
+    // 5. Items Table Top Line
+    doc.setDrawColor(...lineBorder);
+    doc.setLineWidth(0.5);
+    doc.line(14, 78, 196, 78);
+
     const totalVal = parseFloat(invoice.amount || 0);
     const paymentsList = getInvoicePayments(invoice);
     const totalPaidVal = paymentsList.reduce((s, p) => s + parseFloat(p.amount || 0), 0) || (invoice.payment_type === 'advance' ? parseFloat(invoice.advance_amount || 0) : (invoice.status === 'paid' ? totalVal : 0));
     const balVal = Math.max(0, totalVal - totalPaidVal);
 
     autoTable(doc, {
-      startY: 76,
-      head: [['Qty', 'Item', 'Description', 'Unit', 'Total (LKR)']],
+      startY: 79,
+      head: [['DESCRIPTION', 'UNIT PRICE', 'QTY', 'TOTAL']],
       body: [
         [
+          invoice.description || 'Custom Interior & Home Designing Services',
+          `LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
           '1',
-          'Woodwork',
-          invoice.description || 'Custom Furniture & Carpentry Services',
-          'Pcs',
           `LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
         ]
       ],
-      theme: 'grid',
+      theme: 'plain',
       headStyles: {
-        fillColor: primaryBrown,
-        textColor: [255, 255, 255],
+        fillColor: bgColor,
+        textColor: [20, 20, 20],
         fontStyle: 'bold',
-        fontSize: 9,
-        halign: 'center',
-        valign: 'middle',
-        cellPadding: 3
+        fontSize: 8.5,
+        cellPadding: { top: 4, bottom: 4, left: 0, right: 0 }
       },
       styles: {
         fontSize: 8.5,
-        cellPadding: 3.5,
-        textColor: [40, 30, 20],
-        lineColor: lightLine,
-        lineWidth: 0.25,
-        fillColor: [255, 255, 255]
+        cellPadding: { top: 4, bottom: 4, left: 0, right: 0 },
+        textColor: [40, 40, 40],
+        fillColor: bgColor
       },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 14 },
-        1: { halign: 'left', cellWidth: 32, fontStyle: 'bold' },
-        2: { halign: 'left', cellWidth: 80 },
-        3: { halign: 'center', cellWidth: 20 },
-        4: { halign: 'right', cellWidth: 36, fontStyle: 'bold' }
+        0: { cellWidth: 105, halign: 'left' },
+        1: { cellWidth: 30, halign: 'right' },
+        2: { cellWidth: 17, halign: 'center' },
+        3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
       }
     });
 
-    let currentY = doc.lastAutoTable.finalY + 6;
+    let currentY = doc.lastAutoTable.finalY + 2;
+    doc.setDrawColor(...lineBorder);
+    doc.setLineWidth(0.5);
+    doc.line(14, currentY, 196, currentY);
 
-    // 7. Payment History & Installments Table (If payments recorded)
+    // 6. Total Summary Line
+    currentY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...textDark);
+    doc.text("TOTAL", 14, currentY);
+    doc.text(`LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currentY, { align: 'right' });
+
+    currentY += 4;
+    doc.setDrawColor(...lineBorder);
+    doc.setLineWidth(0.5);
+    doc.line(14, currentY, 196, currentY);
+
+    // 7. Right Aligned Breakdown (Total, Paid, Amount due)
+    currentY += 10;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textGray);
+    doc.text("Total", 145, currentY);
+    doc.text(`LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currentY, { align: 'right' });
+
+    if (totalPaidVal > 0) {
+      currentY += 6;
+      doc.text("Total Paid", 145, currentY);
+      doc.text(`LKR ${totalPaidVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currentY, { align: 'right' });
+    }
+
+    currentY += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9.5);
+    doc.setTextColor(...textDark);
+    doc.text("Amount due", 145, currentY);
+    doc.text(`LKR ${balVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currentY, { align: 'right' });
+
+    // 8. Payment History Table (If installments recorded)
     if (paymentsList.length > 0) {
+      currentY += 12;
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9.5);
-      doc.setTextColor(...textBrown);
+      doc.setFontSize(8.5);
+      doc.setTextColor(...textDark);
       doc.text("PAYMENT HISTORY & INSTALLMENTS", 14, currentY);
 
       let runningBal = totalVal;
@@ -378,23 +395,21 @@ export default function Invoices() {
 
       autoTable(doc, {
         startY: currentY + 3,
-        head: [['#', 'Date', 'Payment Note / Method', 'Amount Paid', 'Remaining Balance']],
+        head: [['#', 'DATE', 'PAYMENT NOTE', 'AMOUNT PAID', 'REMAINING BALANCE']],
         body: historyRows,
-        theme: 'grid',
+        theme: 'plain',
         headStyles: {
-          fillColor: [140, 95, 60],
-          textColor: [255, 255, 255],
+          fillColor: bgColor,
+          textColor: [20, 20, 20],
           fontStyle: 'bold',
-          fontSize: 8,
-          halign: 'center',
-          cellPadding: 2.5
+          fontSize: 7.5,
+          cellPadding: { top: 3, bottom: 3 }
         },
         styles: {
-          fontSize: 8,
-          cellPadding: 2.5,
-          textColor: [40, 30, 20],
-          lineColor: lightLine,
-          lineWidth: 0.2
+          fontSize: 7.5,
+          cellPadding: { top: 3, bottom: 3 },
+          textColor: [40, 40, 40],
+          fillColor: bgColor
         },
         columnStyles: {
           0: { halign: 'center', cellWidth: 10 },
@@ -402,94 +417,34 @@ export default function Invoices() {
           2: { halign: 'left', cellWidth: 70 },
           3: { halign: 'right', cellWidth: 37, fontStyle: 'bold' },
           4: { halign: 'right', cellWidth: 37, fontStyle: 'bold' }
-        },
-        didParseCell: (data) => {
-          if (data.section === 'body') {
-            data.cell.styles.fillColor = data.row.index % 2 === 0 ? [255, 255, 255] : [250, 245, 238];
-          }
         }
       });
 
-      currentY = doc.lastAutoTable.finalY + 6;
+      currentY = doc.lastAutoTable.finalY + 4;
     }
 
-    // 8. Notes & Totals Box
-    doc.setFontSize(8.5);
+    // 9. Bank Details & Stylized Thank You Signature Footer
+    const footerY = Math.max(currentY + 24, 238);
+
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...textBrown);
-    doc.text("Notes:", 14, currentY + 4);
-    doc.setLineWidth(0.3);
-    doc.setDrawColor(...lightLine);
-    doc.line(14, currentY + 6, 110, currentY + 6);
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textDark);
+    doc.text("BANK DETAILS", 14, footerY);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(90, 75, 60);
-    doc.text("All carpentry items crafted with premium timber & quality finishes.", 14, currentY + 11);
-
-    // Totals block on right
-    const sumX = 125;
-    const sumW = 71;
-    let currY = currentY;
-
-    doc.setFontSize(8.5);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(80, 60, 45);
-    doc.text("Total Order Amount", sumX, currY + 4);
-    doc.text(`LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 4, { align: 'right' });
-    currY += 7;
-
-    if (totalPaidVal > 0) {
-      doc.text("Total Paid to Date", sumX, currY + 4);
-      doc.text(`LKR ${totalPaidVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 4, { align: 'right' });
-      currY += 7;
-    }
-
-    // Balance Bar
-    doc.setFillColor(...primaryBrown);
-    doc.rect(sumX - 2, currY + 1, sumW + 4, 8, 'F');
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(255, 255, 255);
-    if (balVal > 0) {
-      doc.text("BALANCE DUE", sumX, currY + 6);
-      doc.text(`LKR ${balVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 6, { align: 'right' });
-    } else {
-      doc.text("STATUS", sumX, currY + 6);
-      doc.text("PAID IN FULL", 196, currY + 6, { align: 'right' });
-    }
-
-    // 9. Signatures Section
-    const sigY = 245;
-    doc.setDrawColor(...lightLine);
-    doc.setLineWidth(0.4);
-
-    doc.line(14, sigY, 52, sigY);
-    doc.line(62, sigY, 100, sigY);
-    doc.line(110, sigY, 148, sigY);
-    doc.line(158, sigY, 196, sigY);
-
     doc.setFontSize(7.5);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(120, 90, 65);
-    doc.text("Signature", 33, sigY + 4, { align: 'center' });
-    doc.text("Name", 81, sigY + 4, { align: 'center' });
-    doc.text("Date", 129, sigY + 4, { align: 'center' });
-    doc.text("Payment", 177, sigY + 4, { align: 'center' });
+    doc.setTextColor(...textGray);
+    doc.text("Bank Name: Commercial Bank / Bank of Ceylon", 14, footerY + 5);
+    doc.text("Account Name: Zahi Abdullah", 14, footerY + 10);
+    doc.text("Account No.: 123-456-7890", 14, footerY + 15);
+    doc.text("Pay by: As Agreed", 14, footerY + 20);
 
-    // 10. Terms Footer
-    const footerY = 262;
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...textBrown);
-    doc.text("Terms & Conditions", 14, footerY);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
-    doc.setTextColor(110, 90, 70);
-    const terms = "Thank you for choosing Zahi Abdullah Home Designing. Premium quality craftsmanship & interior design guaranteed. All custom woodwork items are inspected prior to delivery.";
-    const splitTerms = doc.splitTextToSize(terms, 182);
-    doc.text(splitTerms, 14, footerY + 4);
+    // Cursive Thank You Signature Image on Bottom Right
+    try {
+      doc.addImage(THANK_YOU_BASE64, 'SVG', 140, footerY - 5, 52, 28);
+    } catch (err) {
+      console.error("Error embedding thank you signature:", err);
+    }
 
     doc.save(`Invoice_${invNumStr}_${(invoice.customer_name || 'Customer').replace(/\s+/g, '_')}.pdf`);
   };
