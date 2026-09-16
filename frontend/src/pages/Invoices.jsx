@@ -233,6 +233,17 @@ export default function Invoices() {
     doc.setFillColor(...bgColor);
     doc.rect(0, 0, 210, 297, 'F');
 
+    // Subtle Background Logo Watermark in Page Center
+    try {
+      if (doc.GState) {
+        doc.setGState(new doc.GState({ opacity: 0.08 }));
+        doc.addImage(INVOICE_LOGO_BASE64, 'PNG', 45, 75, 120, 120);
+        doc.setGState(new doc.GState({ opacity: 1.0 }));
+      }
+    } catch (wmErr) {
+      console.log("Watermark render note:", wmErr);
+    }
+
     // 2. Centered Circular Emblem Logo & Brand Header (Invoice Specific)
     try {
       doc.addImage(INVOICE_LOGO_BASE64, 'PNG', 85, 6, 40, 40);
