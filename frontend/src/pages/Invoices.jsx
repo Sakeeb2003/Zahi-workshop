@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { invoicesAPI, ordersAPI } from '../api';
-import { Plus, Printer, Trash2, CheckCircle, FileText, Download, Search, CreditCard } from 'lucide-react';
+import { Plus, Printer, Trash2, CheckCircle, FileText, Download, Search, CreditCard, Edit2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -303,17 +303,33 @@ export default function Invoices() {
     doc.save(`Invoice_${invNumStr}_${(invoice.customer_name || 'Customer').replace(/\s+/g, '_')}.pdf`);
   };
 
-  const openModal = () => {
-    const firstOrder = orders.length > 0 ? orders[0] : null;
-    setFormData({ 
-      id: null, 
-      order_id: firstOrder ? firstOrder.id : '', 
-      invoice_date: new Date().toISOString().split('T')[0], 
-      amount: firstOrder ? firstOrder.total_amount : '',
-      payment_type: 'full',
-      advance_amount: '',
-      status: 'unpaid' 
-    });
+  const openModal = (item = null) => {
+    if (item) {
+      setFormData({
+        id: item.id,
+        order_id: item.order_id || '',
+        customer_name: item.customer_name || '',
+        description: item.description || '',
+        invoice_date: item.invoice_date || new Date().toISOString().split('T')[0],
+        amount: item.amount || '',
+        payment_type: item.payment_type || 'full',
+        advance_amount: item.advance_amount || '',
+        status: item.status || 'unpaid'
+      });
+    } else {
+      const firstOrder = orders.length > 0 ? orders[0] : null;
+      setFormData({ 
+        id: null, 
+        order_id: firstOrder ? firstOrder.id : '', 
+        customer_name: firstOrder ? firstOrder.customer_name : '',
+        description: firstOrder ? firstOrder.description : '',
+        invoice_date: new Date().toISOString().split('T')[0], 
+        amount: firstOrder ? firstOrder.total_amount : '',
+        payment_type: 'full',
+        advance_amount: '',
+        status: 'unpaid' 
+      });
+    }
     setIsModalOpen(true);
   };
   
@@ -412,6 +428,9 @@ export default function Invoices() {
                         )}
                       </td>
                       <td className="table-cell text-right space-x-2">
+                        <button onClick={() => openModal(item)} className="text-blue-600 hover:text-blue-800 p-1" title="Edit Invoice">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                          {item.status === 'unpaid' && (
                            <button onClick={() => markAsPaid(item)} className="text-green-600 hover:text-green-800 p-1" title="Mark as Paid">
                             <CheckCircle className="w-4 h-4" />
@@ -438,7 +457,7 @@ export default function Invoices() {
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-slate-900">New Invoice</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{formData.id ? 'Edit Invoice' : 'New Invoice'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">×</button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -521,7 +540,7 @@ export default function Invoices() {
               )}
               <div className="flex justify-end space-x-3 pt-4 border-t border-slate-100 mt-6">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">Cancel</button>
-                <button type="submit" disabled={orders.length === 0} className="btn-primary">Generate Invoice</button>
+                <button type="submit" disabled={orders.length === 0} className="btn-primary">{formData.id ? 'Update Invoice' : 'Generate Invoice'}</button>
               </div>
             </form>
           </div>
