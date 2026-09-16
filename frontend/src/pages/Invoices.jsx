@@ -4,6 +4,7 @@ import { Plus, Printer, Trash2, CheckCircle, FileText, Download, Search, CreditC
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { LOGO_BASE64 } from '../assets/logoBase64';
+import { INVOICE_LOGO_BASE64 } from '../assets/invoiceLogoBase64';
 import { THANK_YOU_BASE64 } from '../assets/thankYouBase64';
 
 // Helper to extract array of payment entries from an invoice
@@ -232,9 +233,9 @@ export default function Invoices() {
     doc.setFillColor(...bgColor);
     doc.rect(0, 0, 210, 297, 'F');
 
-    // 2. Centered Circular Emblem Logo & Brand Header
+    // 2. Centered Circular Emblem Logo & Brand Header (Invoice Specific)
     try {
-      doc.addImage(LOGO_BASE64, 'PNG', 85, 6, 40, 40);
+      doc.addImage(INVOICE_LOGO_BASE64, 'PNG', 85, 6, 40, 40);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
