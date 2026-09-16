@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw, Download, Smartphone, CheckCircle, ArrowRight } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw, Download, Smartphone, CheckCircle, ArrowRight, Lock, Unlock, Key, Delete, ShieldCheck } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Orders from './pages/Orders';
@@ -8,7 +8,7 @@ import Invoices from './pages/Invoices';
 import ItemSummary from './pages/ItemSummary';
 import { setupRealtimeSync } from './api';
 
-function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp }) {
+function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, onLockApp, onOpenPinModal }) {
   const location = useLocation();
   
   const navItems = [
@@ -85,14 +85,30 @@ function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp }) 
             );
           })}
         </nav>
-        <div className="p-4 text-xs text-slate-400 border-t border-slate-800 flex justify-between items-center">
-          <span>&copy; 2026 Zahi Abdullah</span>
-          <button 
-            onClick={onOpenLogoModal}
-            className="text-amber-400 hover:text-amber-300 flex items-center gap-1 text-[11px] underline font-medium"
-          >
-            <Camera className="w-3.5 h-3.5" /> Change Photo
-          </button>
+        <div className="p-4 text-xs text-slate-400 border-t border-slate-800 flex flex-col gap-2.5">
+          <div className="flex justify-between items-center">
+            <span>&copy; 2026 Zahi Abdullah</span>
+            <button 
+              onClick={onOpenLogoModal}
+              className="text-amber-400 hover:text-amber-300 flex items-center gap-1 text-[11px] underline font-medium"
+            >
+              <Camera className="w-3.5 h-3.5" /> Change Photo
+            </button>
+          </div>
+          <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
+            <button
+              onClick={onLockApp}
+              className="text-amber-400 hover:text-amber-300 flex items-center gap-1.5 text-xs font-bold px-2 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+            >
+              <Lock className="w-3.5 h-3.5" /> Lock App
+            </button>
+            <button
+              onClick={onOpenPinModal}
+              className="text-slate-400 hover:text-white flex items-center gap-1 text-[11px] hover:underline"
+            >
+              <Key className="w-3 h-3 text-amber-400" /> PIN Settings
+            </button>
+          </div>
         </div>
       </aside>
     </>
@@ -270,12 +286,270 @@ function InstallGuideModal({ isOpen, onClose, logoUrl, onDirectInstall, hasPromp
   );
 }
 
+// Fullscreen Luxury App Lock Component
+function AppLockScreen({ onUnlock, correctPin, logoUrl }) {
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  const handleKeyPress = (digit) => {
+    if (pin.length < 4) {
+      const newPin = pin + digit;
+      setPin(newPin);
+      setError(false);
+      if (newPin.length === 4) {
+        verifyPin(newPin);
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    setPin(prev => prev.slice(0, -1));
+    setError(false);
+  };
+
+  const handleClear = () => {
+    setPin('');
+    setError(false);
+  };
+
+  const verifyPin = (enteredPin) => {
+    if (enteredPin === correctPin) {
+      onUnlock();
+    } else {
+      setError(true);
+      setShake(true);
+      setTimeout(() => {
+        setShake(false);
+        setPin('');
+      }, 500);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-950 z-[9999] flex flex-col items-center justify-center p-4 select-none">
+      <div className={`w-full max-w-sm flex flex-col items-center ${shake ? 'animate-bounce' : ''}`}>
+        
+        {/* Circular Logo */}
+        <div className="w-24 h-24 rounded-full bg-[#F6F4F0] border-4 border-amber-500 shadow-2xl flex items-center justify-center p-1 mb-4 overflow-hidden">
+          <img src={logoUrl} alt="Zahi Logo" className="w-full h-full object-contain rounded-full" />
+        </div>
+
+        {/* Title */}
+        <h2 className="text-xl font-extrabold text-white tracking-tight">Zahi Abdullah</h2>
+        <p className="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-6">Home Designing</p>
+
+        <div className="flex items-center gap-2 mb-6 bg-slate-900/90 px-4 py-2 rounded-full border border-slate-800 shadow">
+          <Lock className="w-4 h-4 text-amber-500" />
+          <span className="text-xs font-semibold text-slate-200">Enter Security PIN</span>
+        </div>
+
+        {/* PIN Indicators */}
+        <div className="flex items-center justify-center gap-4 mb-8">
+          {[0, 1, 2, 3].map((idx) => (
+            <div
+              key={idx}
+              className={`w-4 h-4 rounded-full transition-all duration-200 border ${
+                pin.length > idx
+                  ? 'bg-amber-500 border-amber-400 scale-125 shadow-[0_0_12px_rgba(245,158,11,0.8)]'
+                  : 'bg-slate-800 border-slate-700'
+              }`}
+            />
+          ))}
+        </div>
+
+        {error && (
+          <p className="text-xs text-red-400 font-bold mb-4 animate-pulse">
+            Incorrect PIN! Please try again.
+          </p>
+        )}
+
+        {/* Keypad */}
+        <div className="grid grid-cols-3 gap-4 w-full max-w-[280px]">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <button
+              key={num}
+              onClick={() => handleKeyPress(num.toString())}
+              className="w-18 h-18 rounded-full bg-slate-900/90 hover:bg-slate-800 active:bg-amber-500 active:text-slate-950 text-white font-bold text-2xl border border-slate-800/80 shadow-md transition-all flex items-center justify-center active:scale-95"
+            >
+              {num}
+            </button>
+          ))}
+          <button
+            onClick={handleClear}
+            className="w-18 h-18 rounded-full bg-slate-900/40 text-slate-400 hover:text-white font-semibold text-xs border border-slate-800/50 flex items-center justify-center active:scale-95"
+          >
+            Clear
+          </button>
+          <button
+            onClick={() => handleKeyPress('0')}
+            className="w-18 h-18 rounded-full bg-slate-900/90 hover:bg-slate-800 active:bg-amber-500 active:text-slate-950 text-white font-bold text-2xl border border-slate-800/80 shadow-md transition-all flex items-center justify-center active:scale-95"
+          >
+            0
+          </button>
+          <button
+            onClick={handleDelete}
+            className="w-18 h-18 rounded-full bg-slate-900/40 text-slate-400 hover:text-white font-semibold text-xs border border-slate-800/50 flex items-center justify-center active:scale-95"
+          >
+            <Delete className="w-5 h-5" />
+          </button>
+        </div>
+
+        <p className="text-[11px] text-slate-500 mt-8">Default PIN: 1234</p>
+      </div>
+    </div>
+  );
+}
+
+// PIN Settings & Change Modal Component
+function PinSettingsModal({ isOpen, onClose, currentPin, onUpdatePin, isLockEnabled, onToggleLock }) {
+  const [oldPin, setOldPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [msg, setMsg] = useState({ text: '', type: '' });
+
+  if (!isOpen) return null;
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    if (oldPin !== currentPin) {
+      setMsg({ text: 'Current PIN is incorrect!', type: 'error' });
+      return;
+    }
+    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+      setMsg({ text: 'New PIN must be 4 digits!', type: 'error' });
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setMsg({ text: 'New PINs do not match!', type: 'error' });
+      return;
+    }
+
+    onUpdatePin(newPin);
+    setMsg({ text: 'PIN updated successfully!', type: 'success' });
+    setTimeout(() => {
+      onClose();
+      setOldPin('');
+      setNewPin('');
+      setConfirmPin('');
+      setMsg({ text: '', type: '' });
+    }, 1000);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-amber-500" />
+            App Security & PIN Lock
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="py-4 space-y-4">
+          <div className="flex items-center justify-between bg-slate-50 p-3.5 rounded-xl border">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800">Enable App Security Lock</h4>
+              <p className="text-xs text-slate-500">Require 4-digit PIN when opening app</p>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleLock}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                isLockEnabled ? 'bg-green-600 text-white' : 'bg-slate-300 text-slate-700'
+              }`}
+            >
+              {isLockEnabled ? 'ENABLED' : 'DISABLED'}
+            </button>
+          </div>
+
+          <form onSubmit={handleSave} className="space-y-3 pt-2">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Change 4-Digit PIN</h4>
+            
+            {msg.text && (
+              <div className={`p-2.5 rounded-lg text-xs font-bold ${msg.type === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>
+                {msg.text}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Current PIN</label>
+              <input
+                type="password"
+                maxLength={4}
+                value={oldPin}
+                onChange={(e) => setOldPin(e.target.value)}
+                placeholder="Enter current 4-digit PIN"
+                className="w-full px-3 py-2 border rounded-xl text-sm tracking-widest text-center font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">New 4-Digit PIN</label>
+              <input
+                type="password"
+                maxLength={4}
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value)}
+                placeholder="Enter new 4-digit PIN"
+                className="w-full px-3 py-2 border rounded-xl text-sm tracking-widest text-center font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Confirm New PIN</label>
+              <input
+                type="password"
+                maxLength={4}
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value)}
+                placeholder="Re-enter new PIN"
+                className="w-full px-3 py-2 border rounded-xl text-sm tracking-widest text-center font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow"
+              >
+                Save New PIN
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('zahi_custom_logo') || '/logo.png');
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredInstallPrompt || null);
+
+  // App Lock & Security State
+  const [appPin, setAppPin] = useState(() => localStorage.getItem('zahi_app_pin') || '1234');
+  const [isLockEnabled, setIsLockEnabled] = useState(() => localStorage.getItem('zahi_app_lock_enabled') !== 'false');
+  const [isLocked, setIsLocked] = useState(() => {
+    const lockPref = localStorage.getItem('zahi_app_lock_enabled');
+    if (lockPref === 'false') return false;
+    const sessionUnlocked = sessionStorage.getItem('zahi_session_unlocked');
+    return !sessionUnlocked;
+  });
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   useEffect(() => {
     setupRealtimeSync();
@@ -327,8 +601,41 @@ function App() {
     localStorage.removeItem('zahi_custom_logo');
   };
 
+  const handleUnlockApp = () => {
+    setIsLocked(false);
+    sessionStorage.setItem('zahi_session_unlocked', 'true');
+  };
+
+  const handleLockApp = () => {
+    setIsLocked(true);
+    sessionStorage.removeItem('zahi_session_unlocked');
+  };
+
+  const handleUpdatePin = (newPin) => {
+    setAppPin(newPin);
+    localStorage.setItem('zahi_app_pin', newPin);
+  };
+
+  const handleToggleLock = () => {
+    const nextVal = !isLockEnabled;
+    setIsLockEnabled(nextVal);
+    localStorage.setItem('zahi_app_lock_enabled', nextVal ? 'true' : 'false');
+    if (!nextVal) {
+      setIsLocked(false);
+    }
+  };
+
   return (
     <Router>
+      {/* Fullscreen Security PIN Lock Screen if locked */}
+      {isLockEnabled && isLocked && (
+        <AppLockScreen
+          onUnlock={handleUnlockApp}
+          correctPin={appPin}
+          logoUrl={logoUrl}
+        />
+      )}
+
       <div className="flex h-screen bg-slate-50 overflow-hidden">
         <Sidebar 
           isOpen={isSidebarOpen} 
@@ -336,6 +643,8 @@ function App() {
           logoUrl={logoUrl}
           onOpenLogoModal={() => setIsLogoModalOpen(true)}
           onInstallApp={handleInstallApp}
+          onLockApp={handleLockApp}
+          onOpenPinModal={() => setIsPinModalOpen(true)}
         />
         
         <div className="flex-1 flex flex-col overflow-hidden w-full">
@@ -365,7 +674,7 @@ function App() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1.5">
               {/* Prominent Yellow Install App Button on Mobile Header */}
               <button
                 onClick={handleInstallApp}
@@ -374,6 +683,14 @@ function App() {
               >
                 <Download className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
                 Install App
+              </button>
+
+              <button
+                onClick={handleLockApp}
+                className="text-amber-400 hover:text-amber-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                title="Lock App"
+              >
+                <Lock className="w-5 h-5" />
               </button>
               
               <button
@@ -404,6 +721,16 @@ function App() {
           currentLogo={logoUrl}
           onSaveLogo={handleSaveLogo}
           onResetLogo={handleResetLogo}
+        />
+
+        {/* PIN Security Settings Modal */}
+        <PinSettingsModal
+          isOpen={isPinModalOpen}
+          onClose={() => setIsPinModalOpen(false)}
+          currentPin={appPin}
+          onUpdatePin={handleUpdatePin}
+          isLockEnabled={isLockEnabled}
+          onToggleLock={handleToggleLock}
         />
 
         {/* Visual Install Instructions Modal */}
