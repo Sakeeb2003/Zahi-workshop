@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Setup Supabase Realtime - when ANY device changes data, ALL devices auto-update
+// Setup Supabase Realtime listener
 export const setupRealtimeSync = () => {
   supabase
     .channel('zahi_all_changes')
@@ -25,7 +25,9 @@ export const setupRealtimeSync = () => {
 };
 
 const notifyUpdate = () => {
-  window.dispatchEvent(new Event('zahi_data_updated'));
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('zahi_data_updated'));
+  }
 };
 
 const parseNum = (val) => {
@@ -37,7 +39,8 @@ const parseNum = (val) => {
 const formatDate = (val) => {
   if (!val) return new Date().toISOString().split('T')[0];
   try {
-    return new Date(val).toISOString().split('T')[0];
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? new Date().toISOString().split('T')[0] : d.toISOString().split('T')[0];
   } catch (e) {
     return new Date().toISOString().split('T')[0];
   }
@@ -130,9 +133,18 @@ export const ordersAPI = {
   },
 
   getSummary: async (fromDate, toDate) => {
-    const { data: orders } = await supabase.from('orders').select('*');
-    const { data: inv } = await supabase.from('inventory').select('*');
-    const filtered = (orders || []).filter(o => o.order_date >= fromDate && o.order_date <= toDate);
+    const { data: orders, error: errOrders } = await supabase.from('orders').select('*');
+    if (errOrders) throw errOrders;
+    const { data: inv, error: errInv } = await supabase.from('inventory').select('*');
+    if (errInv) throw errInv;
+
+    const filtered = (orders || []).filter(o => {
+      if (!o.order_date) return true;
+      if (fromDate && o.order_date < fromDate) return false;
+      if (toDate && o.order_date > toDate) return false;
+      return true;
+    });
+
     return {
       data: {
         orders: {
@@ -149,18 +161,12 @@ export const ordersAPI = {
   },
 
   add: async (item) => {
-    const totalAmt = parseNum(item.total_amount);
-    const adv = parseNum(item.advance);
     const payload = {
-      customer_name: item.customer_name || 'Guest Customer',
-      contact: item.contact || '',
+      customer_name: item.customer_name || 'Customer',
       description: item.description || '',
-      order_date: formatDate(item.order_date),
-      delivery_date: item.delivery_date ? formatDate(item.delivery_date) : null,
-      total_amount: totalAmt,
-      advance: adv,
-      balance: totalAmt - adv,
-      status: item.status || 'pending'
+      total_amount: parseNum(item.total_amount),
+      status: item.status || 'pending',
+      order_date: formatDate(item.order_date)
     };
     const { data, error } = await supabase.from('orders').insert([payload]).select();
     if (error) {
@@ -172,18 +178,12 @@ export const ordersAPI = {
   },
 
   update: async (item) => {
-    const totalAmt = parseNum(item.total_amount);
-    const adv = parseNum(item.advance);
     const payload = {
-      customer_name: item.customer_name || 'Guest Customer',
-      contact: item.contact || '',
+      customer_name: item.customer_name || 'Customer',
       description: item.description || '',
-      order_date: formatDate(item.order_date),
-      delivery_date: item.delivery_date ? formatDate(item.delivery_date) : null,
-      total_amount: totalAmt,
-      advance: adv,
-      balance: totalAmt - adv,
-      status: item.status || 'pending'
+      total_amount: parseNum(item.total_amount),
+      status: item.status || 'pending',
+      order_date: formatDate(item.order_date)
     };
     const { data, error } = await supabase.from('orders').update(payload).eq('id', item.id).select();
     if (error) {
@@ -234,13 +234,14 @@ export const invoicesAPI = {
     }
 
     const payload = {
-      invoice_no: item.invoice_no || `INV-${Date.now()}`,
       order_id: orderId,
       customer_name: customerName,
       description: description,
+      invoice_date: formatDate(item.invoice_date || item.date),
       amount: parseNum(item.amount),
-      status: item.status || 'unpaid',
-      date: formatDate(item.date)
+      payment_type: item.payment_type || 'full',
+      advance_amount: parseNum(item.advance_amount),
+      status: item.status || 'unpaid'
     };
     const { data, error } = await supabase.from('invoices').insert([payload]).select();
     if (error) {
@@ -252,15 +253,15 @@ export const invoicesAPI = {
   },
 
   update: async (item) => {
-    const payload = {
-      invoice_no: item.invoice_no || '',
-      order_id: item.order_id ? parseInt(item.order_id) : null,
-      customer_name: item.customer_name || '',
-      description: item.description || '',
-      amount: parseNum(item.amount),
-      status: item.status || 'unpaid',
-      date: formatDate(item.date)
-    };
+    const payload = {};
+    if (item.status !== undefined) payload.status = item.status;
+    if (item.customer_name !== undefined) payload.customer_name = item.customer_name;
+    if (item.description !== undefined) payload.description = item.description;
+    if (item.amount !== undefined) payload.amount = parseNum(item.amount);
+    if (item.payment_type !== undefined) payload.payment_type = item.payment_type;
+    if (item.advance_amount !== undefined) payload.advance_amount = parseNum(item.advance_amount);
+    if (item.invoice_date || item.date) payload.invoice_date = formatDate(item.invoice_date || item.date);
+
     const { data, error } = await supabase.from('invoices').update(payload).eq('id', item.id).select();
     if (error) {
       console.error("Supabase update invoice error:", error);
@@ -281,7 +282,7 @@ export const invoicesAPI = {
   },
 };
 
-// ─── PURCHASE LOG API ──────────────────────────────────────────────────────────
+// ─── PURCHASE LOG API (Item Summary) ──────────────────────────────────────────
 export const purchaseLogAPI = {
   getAll: async () => {
     const { data, error } = await supabase
@@ -301,7 +302,8 @@ export const purchaseLogAPI = {
       unit: item.unit || 'pcs',
       price_per_unit: price,
       total_cost: qty * price,
-      date: formatDate(item.date)
+      purchased_date: formatDate(item.purchased_date || item.date),
+      notes: item.notes || ''
     };
     const { data, error } = await supabase.from('purchase_log').insert([payload]).select();
     if (error) {

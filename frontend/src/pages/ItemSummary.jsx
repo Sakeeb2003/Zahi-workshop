@@ -271,7 +271,7 @@ export default function ItemSummary() {
                     <td className="table-cell">
                       <span className="inline-flex items-center gap-1 text-blue-700 font-medium text-sm bg-blue-50 px-2 py-0.5 rounded">
                         <Calendar className="w-3 h-3" />
-                        {new Date(item.purchased_date).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'})}
+                        {item.purchased_date ? new Date(item.purchased_date.toString().replace(/-/g, '/')).toLocaleDateString('en-GB', {day:'2-digit',month:'short',year:'numeric'}) : '-'}
                       </span>
                     </td>
                     <td className="table-cell font-semibold text-slate-900">{item.item_name}</td>

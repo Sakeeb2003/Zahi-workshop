@@ -311,7 +311,7 @@ export default function Invoices() {
                         <div className="font-medium text-slate-900">{item.customer_name}</div>
                         <div className="text-xs text-slate-500 truncate max-w-[200px]">{item.description}</div>
                       </td>
-                      <td className="table-cell">{new Date(item.invoice_date).toLocaleDateString()}</td>
+                      <td className="table-cell">{item.invoice_date ? new Date(item.invoice_date.toString().replace(/-/g, '/')).toLocaleDateString() : '-'}</td>
                       <td className="table-cell">
                         <div className="font-semibold text-slate-900">Total: LKR {total.toLocaleString()}</div>
                         {item.payment_type === 'advance' ? (

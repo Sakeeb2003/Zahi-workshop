@@ -85,7 +85,7 @@ export default function Orders() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="font-semibold text-slate-900 text-lg">{item.customer_name}</h3>
-                  <p className="text-sm text-slate-500">{new Date(item.order_date).toLocaleDateString()}</p>
+                  <p className="text-sm text-slate-500">{item.order_date ? new Date(item.order_date.toString().replace(/-/g, '/')).toLocaleDateString() : '-'}</p>
                 </div>
                 {item.status === 'finished' ? (
                   <span className="badge-success flex items-center"><CheckCircle2 className="w-3 h-3 mr-1" /> Finished</span>
