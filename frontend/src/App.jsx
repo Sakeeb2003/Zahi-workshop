@@ -33,14 +33,14 @@ function Sidebar({ isOpen, setIsOpen }) {
       <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 text-white min-h-screen flex flex-col z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="p-6 flex justify-between items-center border-b border-slate-800">
           <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-600/40 flex items-center justify-center overflow-hidden p-1 shadow-inner">
-              <img src="/logo.png" alt="MR Logo" className="w-full h-full object-contain rounded" onError={(e) => { e.target.style.display='none'; }} />
+            <div className="w-12 h-12 rounded-xl bg-amber-950/80 border border-amber-500/50 flex items-center justify-center overflow-hidden p-0.5 shadow-lg">
+              <img src="/logo.png" alt="ZA Logo" className="w-full h-full object-cover rounded-lg" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
-                <span className="text-amber-500 font-extrabold tracking-wider">MR</span> Wood Work
+              <h1 className="text-base font-bold text-white tracking-tight leading-tight">
+                <span className="text-amber-500 font-extrabold tracking-wider text-lg block">ZA Zahi Abdullah</span>
+                <span className="text-xs text-amber-200 font-medium tracking-wide">Home Designing</span>
               </h1>
-              <p className="text-slate-400 text-xs mt-0.5">Carpenter System</p>
             </div>
           </div>
           <button onClick={() => setIsOpen(false)} className="lg:hidden text-slate-400 hover:text-white">

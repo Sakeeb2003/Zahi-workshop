@@ -3,6 +3,7 @@ import { invoicesAPI, ordersAPI } from '../api';
 import { Plus, Printer, Trash2, CheckCircle, FileText, Download, Search, CreditCard, Edit2, Calendar, History, DollarSign } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { LOGO_BASE64 } from '../assets/logoBase64';
 
 // Helper to extract array of payment entries from an invoice
 export const getInvoicePayments = (invoice) => {
@@ -229,13 +230,13 @@ export default function Invoices() {
     doc.setFillColor(...primaryBrown);
     doc.rect(0, 0, 210, 20, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setTextColor(255, 255, 255);
-    doc.text("INVOICE", 105, 9, { align: 'center' });
+    doc.text("INVOICE", 105, 8.5, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(235, 215, 195);
-    doc.text("MR Wood Work • Carpenter Solutions", 105, 15, { align: 'center' });
+    doc.text("ZA Zahi Abdullah Home Designing • Custom Interior & Woodwork", 105, 14.5, { align: 'center' });
 
     // 2. Main Page Background Fill
     doc.setFillColor(...bgCream);
@@ -247,14 +248,25 @@ export default function Invoices() {
     doc.setTextColor(...textBrown);
     doc.text("Invoice", 14, 38);
 
+    // Draw ZA Logo on PDF Header
+    try {
+      doc.addImage(LOGO_BASE64, 'PNG', 135, 23, 18, 18);
+    } catch (err) {
+      console.error("Error embedding logo in PDF:", err);
+    }
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setTextColor(...textBrown);
-    doc.text("MR WOOD WORK", 196, 34, { align: 'right' });
+    doc.text("ZA ZAHI ABDULLAH", 196, 31, { align: 'right' });
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(180, 120, 50);
-    doc.text("CARPENTER & CUSTOM WOOD SOLUTIONS", 196, 39, { align: 'right' });
+    doc.text("HOME DESIGNING & CARPENTRY", 196, 36, { align: 'right' });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(110, 90, 70);
+    doc.text("Quality Interior & Custom Furniture", 196, 40, { align: 'right' });
 
     // 4. "Bill to" Section with Underline
     doc.setFont("helvetica", "bold");
@@ -475,7 +487,7 @@ export default function Invoices() {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(110, 90, 70);
-    const terms = "Thank you for choosing Zahi Wood Work. Quality craftsmanship guaranteed. All custom woodwork and carpentry items are thoroughly inspected prior to delivery.";
+    const terms = "Thank you for choosing ZA Zahi Abdullah Home Designing. Premium quality craftsmanship & interior design guaranteed. All custom woodwork items are inspected prior to delivery.";
     const splitTerms = doc.splitTextToSize(terms, 182);
     doc.text(splitTerms, 14, footerY + 4);
 
