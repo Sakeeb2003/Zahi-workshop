@@ -83,143 +83,224 @@ export default function Invoices() {
 
   const handlePrint = (invoice) => {
     const doc = new jsPDF();
-    
-    // Background color (Cream)
-    doc.setFillColor(253, 246, 237);
-    doc.rect(0, 0, 210, 297, 'F');
-    
-    // Colors
-    const primaryColor = [181, 65, 23]; // Orange/Brown
-    const textColor = [30, 41, 59]; // Dark Slate
-    
-    // Header
+    const primaryBrown = [115, 67, 32];   // Dark warm wood brown #734320
+    const textBrown    = [92, 58, 33];    // Rich wood text #5C3A21
+    const bgCream      = [248, 243, 236]; // Off-white warm paper #F8F3EC
+    const lightLine    = [215, 200, 185]; // Warm beige grid lines
+
+    // 1. Top Header Banner Bar (Wood Plank style)
+    doc.setFillColor(...primaryBrown);
+    doc.rect(0, 0, 210, 20, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.text("INVOICE", 105, 9, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(235, 215, 195);
+    doc.text("Zahi Wood Work Carpenter Solutions", 105, 15, { align: 'center' });
+
+    // 2. Main Page Background Fill & Outer Frame
+    doc.setFillColor(...bgCream);
+    doc.rect(0, 20, 210, 277, 'F');
+
+    // 3. Header Section (Invoice Title & Logo)
+    doc.setFont("serif", "bold");
     doc.setFontSize(28);
+    doc.setTextColor(...textBrown);
+    doc.text("Invoice", 14, 38);
+
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text("INVOICE", 14, 30);
-    
-    // Invoice Number (Right aligned)
-    doc.setFontSize(14);
-    const invNum = `INV-${invoice.id.toString().padStart(3, '0')}`;
-    const invNumWidth = doc.getStringUnitWidth(invNum) * 14 / doc.internal.scaleFactor;
-    doc.text(invNum, 210 - 14 - invNumWidth, 30);
-    
-    // From / Bill To section
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("FROM", 14, 60);
-    doc.text("BILL TO", 120, 60);
-    
-    doc.setFontSize(14);
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    doc.text("Zahi Wood Work", 14, 68);
-    doc.text(invoice.customer_name || 'Customer', 120, 68);
-    
-    doc.setFontSize(11);
+    doc.setFontSize(13);
+    doc.text("ZAHI WOOD WORK", 196, 35, { align: 'right' });
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Main Street, Local Area", 14, 75);
-    doc.text(`Date: ${new Date(invoice.invoice_date).toLocaleDateString()}`, 120, 75);
+    doc.setFontSize(8);
+    doc.setTextColor(140, 105, 75);
+    doc.text("WOOD SOLUTIONS & CUSTOM CARPENTRY", 196, 40, { align: 'right' });
+
+    // 4. "Bill to" Section with Underline
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(...textBrown);
+    doc.text("Bill to", 14, 52);
+    doc.setDrawColor(...primaryBrown);
+    doc.setLineWidth(0.6);
+    doc.line(14, 54, 38, 54);
+
+    // Bill to fields in 4 columns
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(130, 95, 65);
+    doc.text("Client Name", 14, 62);
+    doc.text("Invoice No", 65, 62);
+    doc.text("Order Ref", 115, 62);
+    doc.text("Date", 160, 62);
+
+    doc.setFontSize(9.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(40, 30, 20);
+    const invNumStr = `INV-${invoice.id.toString().padStart(4, '0')}`;
+    const orderRefStr = invoice.order_id ? `Order #${invoice.order_id}` : 'Direct Order';
+    const dateStr = invoice.invoice_date ? new Date(invoice.invoice_date.toString().replace(/-/g, '/')).toLocaleDateString('en-GB') : '-';
     
-    // Table
+    doc.text(invoice.customer_name || 'Valued Customer', 14, 67);
+    doc.text(invNumStr, 65, 67);
+    doc.text(orderRefStr, 115, 67);
+    doc.text(dateStr, 160, 67);
+
+    // Thin separator under client details
+    doc.setDrawColor(...lightLine);
+    doc.setLineWidth(0.4);
+    doc.line(14, 71, 196, 71);
+
+    // 5. Wood Grain Ring Watermark (Concentric Circles in Center Background)
+    doc.setDrawColor(230, 218, 204);
+    doc.setLineWidth(0.3);
+    for (let r = 10; r <= 55; r += 5) {
+      doc.circle(105, 145, r);
+    }
+
+    // 6. Itemized Table
     const totalVal = parseFloat(invoice.amount || 0);
-    const advVal = invoice.payment_type === 'advance' ? parseFloat(invoice.advance_amount || 0) : 0;
-    const balVal = Math.max(0, totalVal - advVal);
+    const advVal   = invoice.payment_type === 'advance' ? parseFloat(invoice.advance_amount || 0) : 0;
+    const balVal   = Math.max(0, totalVal - advVal);
 
     autoTable(doc, {
-      startY: 90,
-      head: [['Description', 'Qty', 'Amount']],
+      startY: 76,
+      head: [['Qty', 'Item', 'Description', 'Unit', 'Total (LKR)']],
       body: [
-        [invoice.description || 'Woodworking Services', '1', `LKR ${totalVal.toLocaleString()}`]
+        [
+          '1',
+          'Woodwork',
+          invoice.description || 'Custom Furniture & Carpentry Services',
+          'Pcs',
+          `LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+        ],
+        ['', '', '', '', ''],
+        ['', '', '', '', ''],
+        ['', '', '', '', '']
       ],
-      theme: 'plain',
-      headStyles: { 
-        textColor: primaryColor, 
+      theme: 'grid',
+      headStyles: {
+        fillColor: primaryBrown,
+        textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 11
+        fontSize: 9,
+        halign: 'center',
+        valign: 'middle',
+        cellPadding: 3
       },
-      styles: { 
-        fontSize: 11, 
-        cellPadding: 4,
-        textColor: textColor
+      styles: {
+        fontSize: 8.5,
+        cellPadding: 3.5,
+        textColor: [40, 30, 20],
+        lineColor: lightLine,
+        lineWidth: 0.25,
+        fillColor: [255, 255, 255]
       },
       columnStyles: {
-        1: { halign: 'center' },
-        2: { halign: 'right' }
-      },
-      didDrawPage: (data) => {
-        // Draw top and bottom borders for header
-        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.setLineWidth(0.5);
-        doc.line(data.settings.margin.left, 90, 210 - data.settings.margin.right, 90);
-        doc.line(data.settings.margin.left, 98, 210 - data.settings.margin.right, 98);
+        0: { halign: 'center', cellWidth: 14 },
+        1: { halign: 'left', cellWidth: 32, fontStyle: 'bold' },
+        2: { halign: 'left', cellWidth: 80 },
+        3: { halign: 'center', cellWidth: 20 },
+        4: { halign: 'right', cellWidth: 36, fontStyle: 'bold' }
       },
       didParseCell: (data) => {
         if (data.section === 'body') {
-          if (data.row.index % 2 === 0) {
-            data.cell.styles.fillColor = [255, 255, 255];
-          } else {
-            data.cell.styles.fillColor = [253, 246, 237];
-          }
+          // Transparent / cream row fill
+          data.cell.styles.fillColor = data.row.index % 2 === 0 ? [255, 255, 255] : [250, 245, 238];
         }
       }
     });
-    
-    const finalY = doc.lastAutoTable.finalY;
-    doc.setDrawColor(230, 230, 230);
-    doc.line(14, finalY, 196, finalY);
-    
-    // Calculation Summary Box (Total, Advance, Balance)
-    let summaryY = finalY + 12;
 
-    // Total Row
-    doc.setFillColor(245, 247, 250);
-    doc.rect(110, summaryY, 86, 8, 'F');
+    const finalY = doc.lastAutoTable.finalY + 4;
+
+    // 7. Notes & Summary Totals Box
+    // Left: Notes section
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.setTextColor(71, 85, 105);
-    doc.text("Total Amount:", 114, summaryY + 5.5);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`LKR ${totalVal.toLocaleString()}`, 192, summaryY + 5.5, { align: 'right' });
-    summaryY += 10;
+    doc.setTextColor(...textBrown);
+    doc.text("Notes:", 14, finalY + 4);
+    doc.setLineWidth(0.3);
+    doc.setDrawColor(...lightLine);
+    doc.line(14, finalY + 6, 110, finalY + 6);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(90, 75, 60);
+    doc.text("All carpentry items crafted with premium timber & quality finishes.", 14, finalY + 11);
+
+    // Right: Totals block
+    const sumX = 125;
+    const sumW = 71;
+    let currY = finalY;
+
+    // Subtotal row
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(80, 60, 45);
+    doc.text("Subtotal", sumX, currY + 4);
+    doc.text(`LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 4, { align: 'right' });
+    currY += 7;
 
     if (invoice.payment_type === 'advance' && advVal > 0) {
-      // Advance Paid Row
-      doc.setFillColor(240, 253, 244);
-      doc.rect(110, summaryY, 86, 8, 'F');
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(22, 101, 52);
-      doc.text("Advance Paid:", 114, summaryY + 5.5);
-      doc.text(`LKR ${advVal.toLocaleString()}`, 192, summaryY + 5.5, { align: 'right' });
-      summaryY += 10;
+      doc.text("Advance Paid", sumX, currY + 4);
+      doc.text(`LKR ${advVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 4, { align: 'right' });
+      currY += 7;
 
-      // Balance Due Bar
-      doc.setFillColor(181, 65, 23);
-      doc.rect(110, summaryY, 86, 10, 'F');
+      // Balance Bar
+      doc.setFillColor(...primaryBrown);
+      doc.rect(sumX - 2, currY + 1, sumW + 4, 8, 'F');
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(9);
       doc.setTextColor(255, 255, 255);
-      doc.text("BALANCE DUE:", 114, summaryY + 7);
-      doc.text(`LKR ${balVal.toLocaleString()}`, 192, summaryY + 7, { align: 'right' });
+      doc.text("Balance Due", sumX, currY + 6);
+      doc.text(`LKR ${balVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 6, { align: 'right' });
     } else {
-      // Full Payment Bar
-      doc.setFillColor(181, 65, 23);
-      doc.rect(110, summaryY, 86, 10, 'F');
+      // Total Bar
+      doc.setFillColor(...primaryBrown);
+      doc.rect(sumX - 2, currY + 1, sumW + 4, 8, 'F');
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFontSize(9);
       doc.setTextColor(255, 255, 255);
-      doc.text("TOTAL AMOUNT:", 114, summaryY + 7);
-      doc.text(`LKR ${totalVal.toLocaleString()}`, 192, summaryY + 7, { align: 'right' });
+      doc.text("Total", sumX, currY + 6);
+      doc.text(`LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 196, currY + 6, { align: 'right' });
     }
-    
-    // Footer
-    doc.setFontSize(10);
+
+    // 8. Signature Section (4 Underline Fields)
+    const sigY = 245;
+    doc.setDrawColor(...lightLine);
+    doc.setLineWidth(0.4);
+
+    doc.line(14, sigY, 52, sigY);
+    doc.line(62, sigY, 100, sigY);
+    doc.line(110, sigY, 148, sigY);
+    doc.line(158, sigY, 196, sigY);
+
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(120, 90, 65);
+    doc.text("Signature", 33, sigY + 4, { align: 'center' });
+    doc.text("Name", 81, sigY + 4, { align: 'center' });
+    doc.text("Date", 129, sigY + 4, { align: 'center' });
+    doc.text("Payment", 177, sigY + 4, { align: 'center' });
+
+    // 9. Terms & Conditions Footer
+    const footerY = 262;
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...textBrown);
+    doc.text("Terms & Conditions", 14, footerY);
+
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Thank you for your business!", 14, 280);
-    
-    doc.save(`Invoice_${invoice.id}_${(invoice.customer_name || 'Customer').replace(/\s+/g, '_')}.pdf`);
+    doc.setFontSize(7);
+    doc.setTextColor(110, 90, 70);
+    const terms = "Thank you for choosing Zahi Wood Work. Quality craftsmanship guaranteed. All custom woodwork and carpentry items are thoroughly inspected prior to delivery.";
+    const splitTerms = doc.splitTextToSize(terms, 182);
+    doc.text(splitTerms, 14, footerY + 4);
+
+    // Save PDF
+    doc.save(`Invoice_${invNumStr}_${(invoice.customer_name || 'Customer').replace(/\s+/g, '_')}.pdf`);
   };
 
   const openModal = () => {
