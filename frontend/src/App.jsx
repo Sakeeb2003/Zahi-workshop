@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw, Download } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Orders from './pages/Orders';
@@ -8,7 +8,7 @@ import Invoices from './pages/Invoices';
 import ItemSummary from './pages/ItemSummary';
 import { setupRealtimeSync } from './api';
 
-function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal }) {
+function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, showInstallBtn }) {
   const location = useLocation();
   
   const navItems = [
@@ -54,7 +54,20 @@ function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal }) {
             <X className="w-6 h-6" />
           </button>
         </div>
-        <nav className="flex-1 px-4 mt-6 space-y-2">
+
+        {showInstallBtn && (
+          <div className="px-4 pt-4">
+            <button
+              onClick={onInstallApp}
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold px-3 py-2.5 rounded-xl shadow flex items-center justify-center gap-2 text-sm transition-all transform active:scale-95"
+            >
+              <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              Install Mobile App
+            </button>
+          </div>
+        )}
+
+        <nav className="flex-1 px-4 mt-4 space-y-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -180,10 +193,37 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('zahi_custom_logo') || '/logo.png');
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
 
   useEffect(() => {
     setupRealtimeSync();
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) {
+      alert("To install on iOS / Safari, tap the Share button and select 'Add to Home Screen'.");
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setShowInstallBtn(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   const handleSaveLogo = (newLogo) => {
     setLogoUrl(newLogo);
@@ -203,6 +243,8 @@ function App() {
           setIsOpen={setIsSidebarOpen} 
           logoUrl={logoUrl}
           onOpenLogoModal={() => setIsLogoModalOpen(true)}
+          onInstallApp={handleInstallApp}
+          showInstallBtn={showInstallBtn}
         />
         
         <div className="flex-1 flex flex-col overflow-hidden w-full">
@@ -231,13 +273,26 @@ function App() {
                 </div>
               </div>
             </div>
-            <button
-              onClick={() => setIsLogoModalOpen(true)}
-              className="text-amber-400 hover:text-amber-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-              title="Change Profile Photo"
-            >
-              <Camera className="w-5 h-5" />
-            </button>
+
+            <div className="flex items-center space-x-2">
+              {showInstallBtn && (
+                <button
+                  onClick={handleInstallApp}
+                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow transition-all"
+                  title="Install Android App"
+                >
+                  <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                  Install App
+                </button>
+              )}
+              <button
+                onClick={() => setIsLogoModalOpen(true)}
+                className="text-amber-400 hover:text-amber-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                title="Change Profile Photo"
+              >
+                <Camera className="w-5 h-5" />
+              </button>
+            </div>
           </header>
 
           <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
