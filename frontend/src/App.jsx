@@ -189,7 +189,7 @@ function LogoUploadModal({ isOpen, onClose, currentLogo, onSaveLogo, onResetLogo
 }
 
 // Modal for clear visual App Installation Instructions (Android & iOS)
-function InstallGuideModal({ isOpen, onClose, logoUrl }) {
+function InstallGuideModal({ isOpen, onClose, logoUrl, onDirectInstall, hasPrompt }) {
   if (!isOpen) return null;
 
   return (
@@ -216,15 +216,22 @@ function InstallGuideModal({ isOpen, onClose, logoUrl }) {
             </div>
           </div>
 
+          <div className="bg-amber-100/70 border border-amber-300 p-3 rounded-xl text-center">
+            <p className="text-xs font-bold text-amber-900 flex items-center justify-center gap-1">
+              <ArrowRight className="w-4 h-4 text-amber-600 -rotate-45 animate-bounce" />
+              Chrome மேல் மூலையில் 3 புள்ளிகளை (⋮) அழுத்தவும்
+            </p>
+          </div>
+
           <div className="space-y-3">
             <div className="border rounded-xl p-3 bg-slate-50">
               <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-green-500"></span> Android (Google Chrome):
               </h5>
               <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
-                <li>Tap 3 dots <span className="font-bold text-slate-900 text-sm">⋮</span> in top right corner.</li>
-                <li>Tap <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Install App</span> or <span className="font-bold text-slate-900">Add to Home screen</span>.</li>
-                <li>Confirm <span className="font-bold text-slate-900">Install</span>.</li>
+                <li>பிரவுசரின் மேலே உள்ள <span className="font-bold text-slate-900 text-sm">3 புள்ளிகளை (⋮)</span> அழுத்தவும்.</li>
+                <li><span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Install App</span> அல்லது <span className="font-bold text-slate-900">Add to Home screen</span> என்பதைக் கிளிக் செய்யவும்.</li>
+                <li><span className="font-bold text-slate-900">Install</span> என்பதை உறுதிப்படுத்தவும்.</li>
               </ol>
             </div>
 
@@ -233,20 +240,29 @@ function InstallGuideModal({ isOpen, onClose, logoUrl }) {
                 <span className="w-2 h-2 rounded-full bg-blue-500"></span> iPhone / iPad (Safari):
               </h5>
               <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
-                <li>Tap Share button <span className="font-bold text-slate-900">📤</span> at bottom of Safari.</li>
-                <li>Scroll down and tap <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Add to Home Screen (+)</span>.</li>
-                <li>Tap <span className="font-bold text-slate-900">Add</span> at top right.</li>
+                <li>Safari கீழே உள்ள Share பொத்தானை <span className="font-bold text-slate-900">📤</span> அழுத்தவும்.</li>
+                <li>கீழே நகர்த்தி <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Add to Home Screen (+)</span> தேர்வு செய்யவும்.</li>
+                <li>மேலே உள்ள <span className="font-bold text-slate-900">Add</span> கொடுக்கவும்.</li>
               </ol>
             </div>
           </div>
         </div>
 
-        <div className="border-t pt-3 flex justify-end">
+        <div className="border-t pt-3 flex flex-col gap-2">
+          {hasPrompt && (
+            <button
+              onClick={onDirectInstall}
+              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold py-3 rounded-xl shadow-lg text-sm flex items-center justify-center gap-2 border border-amber-400 transition-transform active:scale-95"
+            >
+              <Download className="w-4 h-4 stroke-[2.5]" />
+              Install App Now (இப்போதே Install செய்ய)
+            </button>
+          )}
           <button
             onClick={onClose}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow text-sm transition-colors"
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow text-xs transition-colors"
           >
-            Got It!
+            புரிந்தது (3 புள்ளிகளை ⋮ கிளிக் செய்கிறேன்)
           </button>
         </div>
       </div>
@@ -259,7 +275,7 @@ function App() {
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('zahi_custom_logo') || '/logo.png');
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredInstallPrompt || null);
 
   useEffect(() => {
     setupRealtimeSync();
@@ -267,9 +283,14 @@ function App() {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
+      window.deferredInstallPrompt = e;
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    if (window.deferredInstallPrompt) {
+      setDeferredPrompt(window.deferredInstallPrompt);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -277,11 +298,19 @@ function App() {
   }, []);
 
   const handleInstallApp = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
+    const activePrompt = deferredPrompt || window.deferredInstallPrompt;
+    if (activePrompt) {
+      try {
+        activePrompt.prompt();
+        const { outcome } = await activePrompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+          window.deferredInstallPrompt = null;
+          setIsInstallGuideOpen(false);
+        }
+      } catch (err) {
+        console.log("Install prompt error:", err);
+        setIsInstallGuideOpen(true);
       }
     } else {
       setIsInstallGuideOpen(true);
@@ -382,6 +411,8 @@ function App() {
           isOpen={isInstallGuideOpen}
           onClose={() => setIsInstallGuideOpen(false)}
           logoUrl={logoUrl}
+          onDirectInstall={handleInstallApp}
+          hasPrompt={!!(deferredPrompt || (typeof window !== 'undefined' && window.deferredInstallPrompt))}
         />
       </div>
     </Router>
