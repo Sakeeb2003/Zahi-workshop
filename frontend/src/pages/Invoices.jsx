@@ -234,7 +234,7 @@ export default function Invoices() {
 
     // 2. Centered Circular Emblem Logo & Brand Header
     try {
-      doc.addImage(LOGO_BASE64, 'SVG', 85, 6, 40, 40);
+      doc.addImage(LOGO_BASE64, 'PNG', 85, 6, 40, 40);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
