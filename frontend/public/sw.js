@@ -1,5 +1,5 @@
-const CACHE_NAME = 'zahi-cache-v2';
-const urlsToCache = ['/', '/index.html', '/logo.png', '/icon-192.png', '/icon-512.png'];
+const CACHE_NAME = 'zahi-cache-v3';
+const urlsToCache = ['/', '/index.html', '/logo.png', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png', '/favicon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
