@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw, Download } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, FileText, Menu, X, ClipboardList, Camera, Upload, RotateCcw, Download, Smartphone, CheckCircle, ArrowRight } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import Orders from './pages/Orders';
@@ -8,7 +8,7 @@ import Invoices from './pages/Invoices';
 import ItemSummary from './pages/ItemSummary';
 import { setupRealtimeSync } from './api';
 
-function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, showInstallBtn }) {
+function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp }) {
   const location = useLocation();
   
   const navItems = [
@@ -55,17 +55,16 @@ function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, sh
           </button>
         </div>
 
-        {showInstallBtn && (
-          <div className="px-4 pt-4">
-            <button
-              onClick={onInstallApp}
-              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold px-3 py-2.5 rounded-xl shadow flex items-center justify-center gap-2 text-sm transition-all transform active:scale-95"
-            >
-              <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-              Install Mobile App
-            </button>
-          </div>
-        )}
+        {/* Always visible Yellow Install Button in Sidebar */}
+        <div className="px-4 pt-4">
+          <button
+            onClick={onInstallApp}
+            className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-3 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all transform active:scale-95 border border-amber-400"
+          >
+            <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+            Install Mobile App
+          </button>
+        </div>
 
         <nav className="flex-1 px-4 mt-4 space-y-2">
           {navItems.map((item) => {
@@ -189,12 +188,78 @@ function LogoUploadModal({ isOpen, onClose, currentLogo, onSaveLogo, onResetLogo
   );
 }
 
+// Modal for clear visual App Installation Instructions (Android & iOS)
+function InstallGuideModal({ isOpen, onClose, logoUrl }) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-center border-b pb-3">
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <Smartphone className="w-5 h-5 text-amber-500" />
+            Install Zahi Mobile App
+          </h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="py-4 space-y-4">
+          <div className="flex items-center space-x-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
+            <div className="w-12 h-12 rounded-full bg-[#F6F4F0] border-2 border-amber-500 flex items-center justify-center overflow-hidden p-0.5 flex-shrink-0">
+              <img src={logoUrl} alt="App Logo" className="w-full h-full object-contain rounded-full" />
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 text-sm">Zahi Abdullah Home Designing</h4>
+              <p className="text-xs text-amber-800">Install to phone homescreen for 1-tap fast access!</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="border rounded-xl p-3 bg-slate-50">
+              <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span> Android (Google Chrome):
+              </h5>
+              <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
+                <li>Tap 3 dots <span className="font-bold text-slate-900 text-sm">⋮</span> in top right corner.</li>
+                <li>Tap <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Install App</span> or <span className="font-bold text-slate-900">Add to Home screen</span>.</li>
+                <li>Confirm <span className="font-bold text-slate-900">Install</span>.</li>
+              </ol>
+            </div>
+
+            <div className="border rounded-xl p-3 bg-slate-50">
+              <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500"></span> iPhone / iPad (Safari):
+              </h5>
+              <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
+                <li>Tap Share button <span className="font-bold text-slate-900">📤</span> at bottom of Safari.</li>
+                <li>Scroll down and tap <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Add to Home Screen (+)</span>.</li>
+                <li>Tap <span className="font-bold text-slate-900">Add</span> at top right.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-3 flex justify-end">
+          <button
+            onClick={onClose}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow text-sm transition-colors"
+          >
+            Got It!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('zahi_custom_logo') || '/logo.png');
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
+  const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [showInstallBtn, setShowInstallBtn] = useState(false);
 
   useEffect(() => {
     setupRealtimeSync();
@@ -202,7 +267,6 @@ function App() {
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowInstallBtn(true);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -213,16 +277,15 @@ function App() {
   }, []);
 
   const handleInstallApp = async () => {
-    if (!deferredPrompt) {
-      alert("To install on iOS / Safari, tap the Share button and select 'Add to Home Screen'.");
-      return;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      setIsInstallGuideOpen(true);
     }
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setShowInstallBtn(false);
-    }
-    setDeferredPrompt(null);
   };
 
   const handleSaveLogo = (newLogo) => {
@@ -244,50 +307,49 @@ function App() {
           logoUrl={logoUrl}
           onOpenLogoModal={() => setIsLogoModalOpen(true)}
           onInstallApp={handleInstallApp}
-          showInstallBtn={showInstallBtn}
         />
         
         <div className="flex-1 flex flex-col overflow-hidden w-full">
           {/* Mobile & Tablet Header */}
-          <header className="lg:hidden bg-slate-900 text-white border-b border-slate-800 px-4 py-3 flex items-center justify-between shadow-md z-30 sticky top-0">
-            <div className="flex items-center space-x-3">
+          <header className="lg:hidden bg-slate-900 text-white border-b border-slate-800 px-3 py-2.5 flex items-center justify-between shadow-md z-30 sticky top-0">
+            <div className="flex items-center space-x-2.5">
               <button 
                 onClick={() => setIsSidebarOpen(true)} 
-                className="p-2 -ml-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg active:bg-slate-700 transition-colors"
+                className="p-1.5 -ml-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg active:bg-slate-700 transition-colors"
                 aria-label="Open Navigation Menu"
               >
                 <Menu className="w-6 h-6" />
               </button>
               <div 
                 onClick={() => setIsLogoModalOpen(true)}
-                className="flex items-center space-x-2.5 cursor-pointer"
+                className="flex items-center space-x-2 cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-[#F6F4F0] border-2 border-amber-500/70 flex items-center justify-center p-0.5 overflow-hidden shadow-sm">
                   <img src={logoUrl} alt="Zahi Logo" className="w-full h-full object-contain rounded-full" />
                 </div>
                 <div>
-                  <h1 className="font-bold text-white text-base tracking-tight leading-none">
+                  <h1 className="font-bold text-white text-sm tracking-tight leading-none">
                     <span className="text-amber-500 font-extrabold">Zahi Abdullah</span>
                   </h1>
-                  <p className="text-slate-300 text-[11px] mt-0.5 font-medium tracking-wide uppercase">Home Designing</p>
+                  <p className="text-slate-300 text-[10px] mt-0.5 font-medium tracking-wide uppercase">Home Designing</p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              {showInstallBtn && (
-                <button
-                  onClick={handleInstallApp}
-                  className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-2.5 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow transition-all"
-                  title="Install Android App"
-                >
-                  <Download className="w-3.5 h-3.5 stroke-[2.5]" />
-                  Install App
-                </button>
-              )}
+              {/* Prominent Yellow Install App Button on Mobile Header */}
+              <button
+                onClick={handleInstallApp}
+                className="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-md border border-amber-400 transition-all transform active:scale-95"
+                title="Install Mobile App"
+              >
+                <Download className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
+                Install App
+              </button>
+              
               <button
                 onClick={() => setIsLogoModalOpen(true)}
-                className="text-amber-400 hover:text-amber-300 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+                className="text-slate-300 hover:text-amber-400 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
                 title="Change Profile Photo"
               >
                 <Camera className="w-5 h-5" />
@@ -313,6 +375,13 @@ function App() {
           currentLogo={logoUrl}
           onSaveLogo={handleSaveLogo}
           onResetLogo={handleResetLogo}
+        />
+
+        {/* Visual Install Instructions Modal */}
+        <InstallGuideModal
+          isOpen={isInstallGuideOpen}
+          onClose={() => setIsInstallGuideOpen(false)}
+          logoUrl={logoUrl}
         />
       </div>
     </Router>
