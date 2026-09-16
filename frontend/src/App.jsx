@@ -8,7 +8,7 @@ import Invoices from './pages/Invoices';
 import ItemSummary from './pages/ItemSummary';
 import { setupRealtimeSync } from './api';
 
-function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, onLockApp, onOpenPinModal }) {
+function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, onLockApp, onOpenPinModal, isAppInstalled }) {
   const location = useLocation();
   
   const navItems = [
@@ -55,16 +55,18 @@ function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, on
           </button>
         </div>
 
-        {/* Always visible Yellow Install Button in Sidebar */}
-        <div className="px-4 pt-4">
-          <button
-            onClick={onInstallApp}
-            className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-3 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all transform active:scale-95 border border-amber-400"
-          >
-            <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
-            Install Mobile App
-          </button>
-        </div>
+        {/* Yellow Install Button in Sidebar (Hidden if already installed) */}
+        {!isAppInstalled && (
+          <div className="px-4 pt-4">
+            <button
+              onClick={onInstallApp}
+              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-3 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 text-sm transition-all transform active:scale-95 border border-amber-400"
+            >
+              <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              Install Mobile App
+            </button>
+          </div>
+        )}
 
         <nav className="flex-1 px-4 mt-4 space-y-2">
           {navItems.map((item) => {
@@ -540,6 +542,18 @@ function App() {
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(window.deferredInstallPrompt || null);
 
+  // App Installed Detection State
+  const [isAppInstalled, setIsAppInstalled] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         window.navigator.standalone === true ||
+                         document.referrer.startsWith('android-app://');
+      const isSavedInstalled = localStorage.getItem('zahi_app_installed') === 'true';
+      return isStandalone || isSavedInstalled;
+    }
+    return false;
+  });
+
   // App Lock & Security State
   const [appPin, setAppPin] = useState(() => localStorage.getItem('zahi_app_pin') || '1234');
   const [isLockEnabled, setIsLockEnabled] = useState(() => localStorage.getItem('zahi_app_lock_enabled') !== 'false');
@@ -560,14 +574,36 @@ function App() {
       window.deferredInstallPrompt = e;
     };
 
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      localStorage.setItem('zahi_app_installed', 'true');
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     if (window.deferredInstallPrompt) {
       setDeferredPrompt(window.deferredInstallPrompt);
     }
 
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleDisplayModeChange = (e) => {
+      if (e.matches) {
+        setIsAppInstalled(true);
+        localStorage.setItem('zahi_app_installed', 'true');
+      }
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleDisplayModeChange);
+    }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleDisplayModeChange);
+      }
     };
   }, []);
 
@@ -578,6 +614,8 @@ function App() {
         activePrompt.prompt();
         const { outcome } = await activePrompt.userChoice;
         if (outcome === 'accepted') {
+          setIsAppInstalled(true);
+          localStorage.setItem('zahi_app_installed', 'true');
           setDeferredPrompt(null);
           window.deferredInstallPrompt = null;
           setIsInstallGuideOpen(false);
@@ -645,6 +683,7 @@ function App() {
           onInstallApp={handleInstallApp}
           onLockApp={handleLockApp}
           onOpenPinModal={() => setIsPinModalOpen(true)}
+          isAppInstalled={isAppInstalled}
         />
         
         <div className="flex-1 flex flex-col overflow-hidden w-full">
@@ -675,15 +714,17 @@ function App() {
             </div>
 
             <div className="flex items-center space-x-1.5">
-              {/* Prominent Yellow Install App Button on Mobile Header */}
-              <button
-                onClick={handleInstallApp}
-                className="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-md border border-amber-400 transition-all transform active:scale-95"
-                title="Install Mobile App"
-              >
-                <Download className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
-                Install App
-              </button>
+              {/* Prominent Yellow Install App Button on Mobile Header (Hidden if installed) */}
+              {!isAppInstalled && (
+                <button
+                  onClick={handleInstallApp}
+                  className="bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow-md border border-amber-400 transition-all transform active:scale-95"
+                  title="Install Mobile App"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
+                  Install App
+                </button>
+              )}
 
               <button
                 onClick={handleLockApp}
