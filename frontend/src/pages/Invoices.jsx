@@ -306,7 +306,7 @@ export default function Invoices() {
       head: [['DESCRIPTION', 'UNIT PRICE', 'QTY', 'TOTAL']],
       body: [
         [
-          invoice.description || 'Custom Interior & Home Designing Services',
+          invoice.description || 'Custom Interior & Wood Designing Services',
           `LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
           '1',
           `LKR ${totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`

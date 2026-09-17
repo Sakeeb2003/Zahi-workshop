@@ -46,7 +46,7 @@ function Sidebar({ isOpen, setIsOpen, logoUrl, onOpenLogoModal, onInstallApp, on
             <div>
               <h1 className="text-base font-bold text-white tracking-tight leading-tight">
                 <span className="text-amber-500 font-extrabold tracking-wide text-lg block">Zahi Abdullah</span>
-                <span className="text-xs text-amber-100/80 font-medium tracking-wider uppercase">Home Designing</span>
+                <span className="text-xs text-amber-100/80 font-medium tracking-wider uppercase">Wood Designing</span>
               </h1>
             </div>
           </div>
@@ -229,7 +229,7 @@ function InstallGuideModal({ isOpen, onClose, logoUrl, onDirectInstall, hasPromp
               <img src={logoUrl} alt="App Logo" className="w-full h-full object-contain rounded-full" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm">Zahi Abdullah Home Designing</h4>
+              <h4 className="font-bold text-slate-900 text-sm">Zahi Abdullah Wood Designing</h4>
               <p className="text-xs text-amber-800">Install to phone homescreen for 1-tap fast access!</p>
             </div>
           </div>
@@ -339,7 +339,7 @@ function AppLockScreen({ onUnlock, correctPin, logoUrl }) {
 
         {/* Title */}
         <h2 className="text-xl font-extrabold text-white tracking-tight">Zahi Abdullah</h2>
-        <p className="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-6">Home Designing</p>
+        <p className="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-6">Wood Designing</p>
 
         <div className="flex items-center gap-2 mb-6 bg-slate-900/90 px-4 py-2 rounded-full border border-slate-800 shadow">
           <Lock className="w-4 h-4 text-amber-500" />
@@ -708,7 +708,7 @@ function App() {
                   <h1 className="font-bold text-white text-sm tracking-tight leading-none">
                     <span className="text-amber-500 font-extrabold">Zahi Abdullah</span>
                   </h1>
-                  <p className="text-slate-300 text-[10px] mt-0.5 font-medium tracking-wide uppercase">Home Designing</p>
+                  <p className="text-slate-300 text-[10px] mt-0.5 font-medium tracking-wide uppercase">Wood Designing</p>
                 </div>
               </div>
             </div>
