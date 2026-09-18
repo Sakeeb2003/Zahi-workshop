@@ -246,15 +246,20 @@ export default function Invoices() {
 
     // 2. Centered Circular Emblem Logo & Brand Header (Invoice Specific)
     try {
-      doc.addImage(INVOICE_LOGO_BASE64, 'PNG', 85, 6, 40, 40);
+      doc.addImage(INVOICE_LOGO_BASE64, 'PNG', 85, 4, 40, 40);
     } catch (err) {
       console.error("Error embedding logo in PDF:", err);
     }
 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...textGray);
+    doc.text("185B/2 Hijira road, Sainthamaruthu-13 | Tel: 0757154150, 0707154150", 105, 47, { align: 'center' });
+
     // 3. Top Thin Horizontal Line Divider
     doc.setDrawColor(...lineBorder);
     doc.setLineWidth(0.4);
-    doc.line(14, 50, 196, 50);
+    doc.line(14, 51, 196, 51);
 
     // 4. Meta Information (Issued To & Invoice No)
     doc.setFont("helvetica", "bold");
@@ -425,9 +430,10 @@ export default function Invoices() {
       currentY = doc.lastAutoTable.finalY + 4;
     }
 
-    // 9. Bank Details & Stylized Thank You Signature Footer
+    // 9. Bank Details, Contact & Address Footer
     const footerY = Math.max(currentY + 24, 238);
 
+    // Left Column: BANK DETAILS
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...textDark);
@@ -439,6 +445,19 @@ export default function Invoices() {
     doc.text("Bank: Sampath Bank", 14, footerY + 5);
     doc.text("Account Name: Zahi Abdullah", 14, footerY + 10);
     doc.text("Account No.: 1126-5272-3744", 14, footerY + 15);
+
+    // Middle Column: CONTACT & ADDRESS
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.setTextColor(...textDark);
+    doc.text("CONTACT & ADDRESS", 80, footerY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...textGray);
+    doc.text("Tel: 0757154150, 0707154150", 80, footerY + 5);
+    doc.text("Address: 185B/2 Hijira road", 80, footerY + 10);
+    doc.text("Sainthamaruthu-13", 80, footerY + 15);
 
     // Cursive Thank You Signature Image on Bottom Right
     try {
