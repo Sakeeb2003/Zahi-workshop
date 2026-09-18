@@ -210,79 +210,86 @@ function LogoUploadModal({ isOpen, onClose, currentLogo, onSaveLogo, onResetLogo
 function InstallGuideModal({ isOpen, onClose, logoUrl, onDirectInstall, hasPrompt }) {
   if (!isOpen) return null;
 
+  const imgSrc = logoUrl || '/logo.png';
+
   return (
     <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center border-b pb-3">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-100">
+        {/* Header */}
+        <div className="flex justify-between items-center border-b pb-3 mb-4">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
             <Smartphone className="w-5 h-5 text-amber-500" />
-            Install Zahi Mobile App
+            Install Mobile App
           </h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="py-4 space-y-4">
-          <div className="flex items-center space-x-3 bg-amber-50 p-3 rounded-xl border border-amber-200">
-            <div className="w-12 h-12 rounded-full bg-[#F6F4F0] border-2 border-amber-500 flex items-center justify-center overflow-hidden p-0.5 flex-shrink-0">
-              <img src={logoUrl} alt="App Logo" className="w-full h-full object-contain rounded-full" />
-            </div>
-            <div>
-              <h4 className="font-bold text-slate-900 text-sm">Zahi Abdullah Wood Designing</h4>
-              <p className="text-xs text-amber-800">Install to phone homescreen for 1-tap fast access!</p>
-            </div>
+        {/* App Info */}
+        <div className="flex items-center space-x-3 bg-amber-50 p-3 rounded-xl border border-amber-200 mb-4">
+          <div className="w-14 h-14 rounded-full bg-[#F6F4F0] border-2 border-amber-500 flex items-center justify-center overflow-hidden p-1 flex-shrink-0 shadow-md">
+            <img
+              src={imgSrc}
+              alt="App Logo"
+              className="w-full h-full object-contain rounded-full"
+              onError={(e) => { e.target.src = '/logo.png'; }}
+            />
           </div>
-
-          <div className="bg-amber-100/70 border border-amber-300 p-3 rounded-xl text-center">
-            <p className="text-xs font-bold text-amber-900 flex items-center justify-center gap-1">
-              <ArrowRight className="w-4 h-4 text-amber-600 -rotate-45 animate-bounce" />
-              Chrome மேல் மூலையில் 3 புள்ளிகளை (⋮) அழுத்தவும்
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="border rounded-xl p-3 bg-slate-50">
-              <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500"></span> Android (Google Chrome):
-              </h5>
-              <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
-                <li>பிரவுசரின் மேலே உள்ள <span className="font-bold text-slate-900 text-sm">3 புள்ளிகளை (⋮)</span> அழுத்தவும்.</li>
-                <li><span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Install App</span> அல்லது <span className="font-bold text-slate-900">Add to Home screen</span> என்பதைக் கிளிக் செய்யவும்.</li>
-                <li><span className="font-bold text-slate-900">Install</span> என்பதை உறுதிப்படுத்தவும்.</li>
-              </ol>
-            </div>
-
-            <div className="border rounded-xl p-3 bg-slate-50">
-              <h5 className="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500"></span> iPhone / iPad (Safari):
-              </h5>
-              <ol className="text-xs text-slate-600 space-y-1.5 list-decimal list-inside font-medium">
-                <li>Safari கீழே உள்ள Share பொத்தானை <span className="font-bold text-slate-900">📤</span> அழுத்தவும்.</li>
-                <li>கீழே நகர்த்தி <span className="font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">Add to Home Screen (+)</span> தேர்வு செய்யவும்.</li>
-                <li>மேலே உள்ள <span className="font-bold text-slate-900">Add</span> கொடுக்கவும்.</li>
-              </ol>
-            </div>
+          <div>
+            <h4 className="font-bold text-slate-900 text-sm">Zahi Abdullah</h4>
+            <p className="text-xs text-amber-700 font-semibold">Wood Designing</p>
+            <p className="text-xs text-slate-500 mt-0.5">Home screen-ல் install செய்யவும்</p>
           </div>
         </div>
 
-        <div className="border-t pt-3 flex flex-col gap-2">
-          {hasPrompt && (
+        {/* Direct Install Button - shown when Chrome prompt is available */}
+        {hasPrompt ? (
+          <div className="mb-4">
             <button
               onClick={onDirectInstall}
-              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold py-3 rounded-xl shadow-lg text-sm flex items-center justify-center gap-2 border border-amber-400 transition-transform active:scale-95"
+              className="w-full bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-slate-950 font-extrabold py-3.5 rounded-xl shadow-lg text-sm flex items-center justify-center gap-2 border border-amber-400 transition-all active:scale-95"
             >
-              <Download className="w-4 h-4 stroke-[2.5]" />
-              Install App Now (இப்போதே Install செய்ய)
+              <Download className="w-5 h-5 stroke-[2.5]" />
+              இப்போதே Install செய்யவும் ✓
             </button>
-          )}
-          <button
-            onClick={onClose}
-            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl shadow text-xs transition-colors"
-          >
-            புரிந்தது (3 புள்ளிகளை ⋮ கிளிக் செய்கிறேன்)
-          </button>
-        </div>
+            <p className="text-center text-xs text-slate-400 mt-1.5">மேலே உள்ள பட்டனை அழுத்தவும் → Install கொடுக்கவும்</p>
+          </div>
+        ) : (
+          /* Manual steps when no native prompt */
+          <div className="space-y-3 mb-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+              <p className="text-xs font-bold text-amber-900 mb-2 flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full bg-green-500 text-white text-[10px] flex items-center justify-center font-bold flex-shrink-0">A</span>
+                Android / Chrome:
+              </p>
+              <ol className="text-xs text-slate-700 space-y-1 list-decimal list-inside">
+                <li>Chrome-ல் மேலே உள்ள <strong>⋮ (3 புள்ளிகள்)</strong> அழுத்தவும்</li>
+                <li><strong className="text-amber-700">Install App</strong> அல்லது <strong>Add to Home screen</strong> தேர்வு செய்யவும்</li>
+                <li><strong>Install</strong> கொடுக்கவும்</li>
+              </ol>
+            </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+              <p className="text-xs font-bold text-blue-900 mb-2 flex items-center gap-1">
+                <span className="w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center font-bold flex-shrink-0">i</span>
+                iPhone / iPad (Safari):
+              </p>
+              <ol className="text-xs text-slate-700 space-y-1 list-decimal list-inside">
+                <li>கீழே உள்ள <strong>📤 Share</strong> பொத்தானை அழுத்தவும்</li>
+                <li><strong className="text-blue-700">Add to Home Screen</strong> தேர்வு செய்யவும்</li>
+                <li>மேலே <strong>Add</strong> கொடுக்கவும்</li>
+              </ol>
+            </div>
+          </div>
+        )}
+
+        {/* Close/Got it button */}
+        <button
+          onClick={onClose}
+          className="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+        >
+          {hasPrompt ? 'பின்னர் செய்கிறேன்' : 'புரிந்தது ✓'}
+        </button>
       </div>
     </div>
   );
@@ -540,16 +547,16 @@ function App() {
   const [logoUrl, setLogoUrl] = useState(localStorage.getItem('zahi_custom_logo') || '/logo.png');
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState(window.deferredInstallPrompt || null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
-  // App Installed Detection State
+  // App Installed Detection State - only true if actually running as standalone PWA
   const [isAppInstalled, setIsAppInstalled] = useState(() => {
     if (typeof window !== 'undefined') {
+      // Only consider installed if running in standalone mode (actual PWA)
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                          window.navigator.standalone === true ||
                          document.referrer.startsWith('android-app://');
-      const isSavedInstalled = localStorage.getItem('zahi_app_installed') === 'true';
-      return isStandalone || isSavedInstalled;
+      return isStandalone; // Don't rely on localStorage flag - always show install button in browser
     }
     return false;
   });
@@ -568,21 +575,26 @@ function App() {
   useEffect(() => {
     setupRealtimeSync();
 
+    // Capture beforeinstallprompt event - Chrome fires this when PWA can be installed
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
+      console.log('✅ beforeinstallprompt captured!');
       setDeferredPrompt(e);
       window.deferredInstallPrompt = e;
     };
 
     const handleAppInstalled = () => {
+      console.log('✅ App installed!');
       setIsAppInstalled(true);
-      localStorage.setItem('zahi_app_installed', 'true');
+      setDeferredPrompt(null);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
+    // Check if already captured before component mounted
     if (window.deferredInstallPrompt) {
+      console.log('✅ Using pre-captured deferredInstallPrompt');
       setDeferredPrompt(window.deferredInstallPrompt);
     }
 
@@ -590,7 +602,6 @@ function App() {
     const handleDisplayModeChange = (e) => {
       if (e.matches) {
         setIsAppInstalled(true);
-        localStorage.setItem('zahi_app_installed', 'true');
       }
     };
 
@@ -611,20 +622,28 @@ function App() {
     const activePrompt = deferredPrompt || window.deferredInstallPrompt;
     if (activePrompt) {
       try {
+        // Directly trigger Chrome's native install prompt
         activePrompt.prompt();
         const { outcome } = await activePrompt.userChoice;
+        console.log('Install outcome:', outcome);
         if (outcome === 'accepted') {
           setIsAppInstalled(true);
-          localStorage.setItem('zahi_app_installed', 'true');
           setDeferredPrompt(null);
           window.deferredInstallPrompt = null;
           setIsInstallGuideOpen(false);
+        } else {
+          // User dismissed - close modal
+          setIsInstallGuideOpen(false);
         }
+        setDeferredPrompt(null);
+        window.deferredInstallPrompt = null;
       } catch (err) {
         console.log("Install prompt error:", err);
+        // Show guide as fallback
         setIsInstallGuideOpen(true);
       }
     } else {
+      // No native prompt available - show manual guide
       setIsInstallGuideOpen(true);
     }
   };
