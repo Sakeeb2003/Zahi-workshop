@@ -566,8 +566,10 @@ export default function Invoices() {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                       <td className="table-cell font-medium text-slate-900">
-                        <div className="flex items-center">
-                          <FileText className="w-4 h-4 text-slate-400 mr-2" />
+                        <div className="flex items-center gap-2">
+                          <div className="w-9 h-9 rounded-full bg-[#F6F4F0] border-2 border-amber-500/80 flex items-center justify-center overflow-hidden p-0.5 shadow-sm flex-shrink-0">
+                            <img src="/logo.png" alt="Zahi Logo" className="w-full h-full object-contain rounded-full" onError={(e) => { e.target.style.display='none'; }} />
+                          </div>
                           INV-{item.id.toString().padStart(4, '0')}
                         </div>
                       </td>
