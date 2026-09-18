@@ -446,25 +446,25 @@ export default function Invoices() {
     doc.text("Account Name: Zahi Abdullah", 14, footerY + 10);
     doc.text("Account No.: 1126-5272-3744", 14, footerY + 15);
 
-    // Middle Column: CONTACT & ADDRESS
+    // Center Column: Cursive Thank You Signature Image
+    try {
+      doc.addImage(THANK_YOU_BASE64, 'SVG', 82, footerY - 5, 48, 26);
+    } catch (err) {
+      console.error("Error embedding thank you signature:", err);
+    }
+
+    // Right Column: CONTACT & ADDRESS (Right Aligned)
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(...textDark);
-    doc.text("CONTACT & ADDRESS", 80, footerY);
+    doc.text("CONTACT & ADDRESS", 196, footerY, { align: 'right' });
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(...textGray);
-    doc.text("Tel: 0757154150, 0707154150", 80, footerY + 5);
-    doc.text("Address: 185B/2 Hijira road", 80, footerY + 10);
-    doc.text("Sainthamaruthu-13", 80, footerY + 15);
-
-    // Cursive Thank You Signature Image on Bottom Right
-    try {
-      doc.addImage(THANK_YOU_BASE64, 'SVG', 140, footerY - 5, 52, 28);
-    } catch (err) {
-      console.error("Error embedding thank you signature:", err);
-    }
+    doc.text("Tel: 0757154150, 0707154150", 196, footerY + 5, { align: 'right' });
+    doc.text("Address: 185B/2 Hijira road", 196, footerY + 10, { align: 'right' });
+    doc.text("Sainthamaruthu-13", 196, footerY + 15, { align: 'right' });
 
     doc.save(`Invoice_${invNumStr}_${(invoice.customer_name || 'Customer').replace(/\s+/g, '_')}.pdf`);
   };
